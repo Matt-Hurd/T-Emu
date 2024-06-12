@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"time"
 )
 
 type StringArray []string
@@ -36,7 +35,7 @@ type CharacterEftStats struct {
 	SessionExperienceMult  float64
 	ExperienceBonusMult    float64
 	TotalSessionExperience int
-	LastSessionDate        time.Time
+	LastSessionDate        int64
 	Aggressor              *string
 	DroppedItems           StringArray
 	FoundInRaidItems       StringArray
@@ -62,7 +61,7 @@ type CharacterCounterItem struct {
 type CharacterDamageHistory struct {
 	BaseModel
 	CharacterEftStatsID string `gorm:"primaryKey" json:"-"`
-	LethalDamagePart    string
+	LethalDamagePart    string `gorm:"default:Head"`
 	LethalDamage        *CharacterBodyPartDamage
 	BodyParts           []CharacterBodyPartDamage
 }
@@ -79,10 +78,9 @@ type CharacterBodyPartDamage struct {
 	ImpactsCount             int
 }
 
-// MarshalJSON customizes the JSON representation of CharacterDamageHistory
 func (cdh CharacterDamageHistory) MarshalJSON() ([]byte, error) {
 	type Alias CharacterDamageHistory
-	bodyParts := []string{"Head", "Chest", "Stomach", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"}
+	bodyParts := []string{"Head", "Chest", "Stomach", "LeftArm", "RightArm", "LeftLeg", "RightLeg"}
 	bodyPartsMap := make(map[string][]CharacterBodyPartDamage)
 	for _, part := range bodyParts {
 		bodyPartsMap[part] = []CharacterBodyPartDamage{}

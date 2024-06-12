@@ -9,28 +9,23 @@ import (
 
 type CharacterInventory struct {
 	BaseModel
-	CharacterID        string                           `gorm:"primaryKey" json:"-"`
-	Items              []CharacterItem                  `json:"items" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-	Equipment          *CharacterItemID                 `json:"equipment" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-	Stash              *CharacterItemID                 `json:"stash" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-	SortingTable       *CharacterItemID                 `json:"sortingTable" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-	QuestRaidItems     *CharacterItemID                 `json:"questRaidItems" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-	QuestStashItems    *CharacterItemID                 `json:"questStashItems" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-	FastPanel          datatypes.JSON                   `json:"fastPanel" gorm:"default:'{}'"`
-	HideoutAreaStashes datatypes.JSON                   `json:"hideoutAreaStashes" gorm:"default:'{}'"`
-	FavoriteItems      []CharacterInventoryFavoriteItem `json:"favoriteItems" gorm:"foreignKey:CharacterInventoryID;references:ID"`
-}
-
-type CharacterInventoryFavoriteItem struct {
-	CharacterInventoryID string `gorm:"primaryKey" json:"-"`
-	ItemID               string `gorm:"primaryKey"`
+	CharacterID        string           `gorm:"primaryKey" json:"-"`
+	Items              []CharacterItem  `json:"items" gorm:"foreignKey:CharacterInventoryID;references:ID"`
+	Equipment          *CharacterItemID `json:"equipment" gorm:"foreignKey:CharacterInventoryID;references:ID"`
+	Stash              *CharacterItemID `json:"stash" gorm:"foreignKey:CharacterInventoryID;references:ID"`
+	SortingTable       *CharacterItemID `json:"sortingTable" gorm:"foreignKey:CharacterInventoryID;references:ID"`
+	QuestRaidItems     *CharacterItemID `json:"questRaidItems" gorm:"foreignKey:CharacterInventoryID;references:ID"`
+	QuestStashItems    *CharacterItemID `json:"questStashItems" gorm:"foreignKey:CharacterInventoryID;references:ID"`
+	FastPanel          datatypes.JSON   `json:"fastPanel" gorm:"default:'{}'"`
+	HideoutAreaStashes datatypes.JSON   `json:"hideoutAreaStashes" gorm:"default:'{}'"`
+	FavoriteItems      datatypes.JSON   `json:"favoriteItems" gorm:"default:'[]'"`
 }
 
 type CharacterItem struct {
 	BaseModel
 	ID                             string          `gorm:"primaryKey" json:"_id"`
 	CharacterInventoryID           string          `gorm:"primaryKey" json:"-"`
-	Tpl                            string          `json:"tpl"`
+	Tpl                            string          `json:"_tpl"`
 	ParentID                       string          `json:"parentId,omitempty"`
 	SlotID                         string          `json:"slotId,omitempty"`
 	LocationX                      sql.NullInt16   `json:"-" gorm:"column:location_x"`

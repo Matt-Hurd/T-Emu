@@ -3,7 +3,11 @@ package routes
 import (
 	"bytes"
 	"compress/zlib"
+	"eft-private-server/config"
 	"eft-private-server/controllers"
+	"eft-private-server/controllers/game"
+	"eft-private-server/controllers/menu"
+	"eft-private-server/controllers/trading"
 	"fmt"
 	"io"
 	"net/http"
@@ -119,52 +123,83 @@ func RequestLogger() gin.HandlerFunc {
 	}
 }
 
-// ResponseLogger logs the response details including headers and body
-// func ResponseLogger() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		// Capture the response body
-// 		responseBody := &bytes.Buffer{}
-// 		writer := &responseBodyWriter{body: responseBody, ResponseWriter: c.Writer}
-// 		c.Writer = writer
+func SessionValidationMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sessionID := config.GetSessionID(c)
+		if sessionID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "No session found"})
+			c.Abort()
+			return
+		}
 
-// 		c.Next()
+		session := config.GetSession(c)
+		if session == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
+			c.Abort()
+			return
+		}
 
-// 		// Log response headers
-// 		fmt.Printf("Response Headers: %v\n", c.Writer.Header())
-
-// 		// Log response body
-// 		fmt.Printf("Response Body: %s\n", responseBody.String())
-
-// 		fmt.Printf("%d %s %s\n",
-// 			c.Writer.Status(),
-// 			c.Request.Method,
-// 			c.Request.RequestURI,
-// 		)
-// 	}
-// }
-
-// responseBodyWriter is a custom response writer to capture the response body
-// type responseBodyWriter struct {
-// 	gin.ResponseWriter
-// 	body *bytes.Buffer
-// }
-
-// func (w responseBodyWriter) Write(b []byte) (int, error) {
-// 	w.body.Write(b)
-// 	return w.ResponseWriter.Write(b)
-// }
+		// Session is valid, proceed with the request
+		c.Next()
+	}
+}
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	r.Use(BufferMiddleware())
 	r.Use(RequestLogger())
-	// r.Use(ResponseLogger())
+	r.Use(SessionValidationMiddleware())
 
 	r.POST("/characters/:accountID", controllers.CreateCharacter)
-	r.GET("/client/game/profile/list", controllers.GetProfileCharacters)
-	r.POST("/client/menu/locale/en", controllers.GetEnLocale)
-	// r.POST("/users", controllers.CreateUser)
+
+	r.POST("/client/languages", controllers.GetLanguages)
+	r.POST("/client/items", controllers.GetItems)
+	r.POST("/client/items/prices", controllers.GetItemPrices)
+	r.POST("/client/customization", controllers.GetCustomization)
+	r.POST("/client/globals", controllers.GetGlobals)
+	r.POST("/client/settings", controllers.GetSettings)
+	r.POST("/client/locale/en", controllers.GetLocaleEn)
+	r.POST("/client/weather", controllers.GetWeather)
+
+	r.POST("/client/menu/locale/en", menu.GetMenuLocaleEn)
+
+	r.POST("/client/game/mode", game.GetGameMode)
+	r.POST("/client/game/start", game.GameStart)
+	r.POST("/client/game/version/validate", game.VersionValidate)
+	r.POST("/client/game/config", game.GetGameConfig)
+	r.POST("/client/game/profile/list", game.ProfileList)
+	r.POST("/client/game/profile/select", game.ProfileSelect)
+
+	r.POST("/client/trading/api/traderSettings", trading.GetTraderSettings)
+	r.POST("/client/trading/customization/storage", controllers.GetTradingCustomizationStorage)
+
+	r.POST("/client/profile/status", controllers.GetProfileStatus)
+
+	r.POST("/client/hideout/areas", hideout.GetHideoutAreas)
+	r.POST("/client/hideout/qte/list", hideout.GetHideoutQteList)
+	r.POST("/client/hideout/settings", hideout.GetHideoutSettings)
+	r.POST("/client/hideout/production/recipes", hideout.GetHideoutProductionRecipes)
+	r.POST("/client/hideout/production/scavcase/recipes", hideout.GetHideoutProductionScavcaseRecipes)
+
+	r.POST("/client/quest/list", quest.GetQuestList)
+
+	r.POST("/client/handbook/templates", handbook.GetHandbookTemplates)
+	r.POST("/client/handbook/builds/my/list", handbook.GetHandbookBuildsMyList)
+
+	r.POST("/client/notifier/channel/create", notifier.CreateNotifierChannel)
+
+	r.POST("/client/friend/list", friend.GetFriendList)
+	r.POST("/client/friend/request/list/inbox", friend.GetFriendRequestListInbox)
+	r.POST("/client/friend/request/list/outbox", friend.GetFriendRequestListOutbox)
+
+	r.POST("/client/mail/dialog/list", mail.GetMailDialogList)
+
+	r.POST("/client/server/list", server.GetServerList)
+
+	r.POST("/client/match/group/current", match.GetMatchGroupCurrent)
+
+	r.POST("/client/repeatalbeQuests/activityPeriods", repeatalbeQuests.GetRepeatableQuestsActivityPeriods)
 
 	return r
 }

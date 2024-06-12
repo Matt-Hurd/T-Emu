@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type CharacterInfo struct {
 	BaseModel
 	CharacterID             string `json:"-"`
@@ -13,7 +15,7 @@ type CharacterInfo struct {
 	GameVersion             string
 	AccountType             int   `gorm:"default:0"`
 	MemberCategory          int   `gorm:"default:2"`
-	LockedMoveCommands      bool  `gorm:"default:false"`
+	LockedMoveCommands      bool  `gorm:"default:false" json:"lockedMoveCommands"`
 	SavageLockTime          int64 `gorm:"default:0"`
 	LastTimePlayedAsSavage  int64 `gorm:"default:0"`
 	Settings                CharacterInfoSettings
@@ -46,4 +48,19 @@ type CharacterInfoSettings struct {
 	Experience      int     `gorm:"default:-1"`
 	StandingForKill float64 `gorm:"default:0"`
 	AggressorBonus  float64 `gorm:"default:0"`
+}
+
+func (ci CharacterInfo) MarshalJSON() ([]byte, error) {
+	type Alias CharacterInfo
+	if ci.NeedWipeOptions == nil {
+		ci.NeedWipeOptions = []CharacterInfoNeedWipeOption{}
+	}
+	if ci.Bans == nil {
+		ci.Bans = []CharacterBan{}
+	}
+	return json.Marshal(&struct {
+		Alias
+	}{
+		Alias: (Alias)(ci),
+	})
 }

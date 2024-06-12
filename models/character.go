@@ -3,13 +3,14 @@ package models
 import (
 	"eft-private-server/helpers"
 	"encoding/json"
+	"fmt"
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
 type Account struct {
-	ID         string `gorm:"primaryKey" json:"uid"`
+	ID         int `gorm:"primaryKey" json:"uid"`
 	Name       string
 	Email      string      `gorm:"unique"`
 	Characters []Character `gorm:"constraint:OnUpdate:CASCADE" json:"characters"`
@@ -27,7 +28,7 @@ func (m *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 type Character struct {
 	BaseModel
 	ID                    string                       `gorm:"primaryKey" json:"_id"`
-	AccountID             string                       `json:"aid" gorm:"not null;index"`
+	AccountID             int                          `json:"aid" gorm:"not null;index"`
 	SavageID              *string                      `json:"savage"`
 	Info                  CharacterInfo                `gorm:"constraint:OnUpdate:CASCADE"`
 	Customization         CharacterCustomization       `gorm:"constraint:OnUpdate:CASCADE"`
@@ -80,7 +81,7 @@ type CharacterHideoutArea struct {
 
 type CharacterBonus struct {
 	CharacterID string `gorm:"primaryKey" json:"-"`
-	ID          string `json:"id"`
+	ID          string `gorm:"primaryKey" json:"id"`
 	Type        string `json:"type"`
 	TemplateID  string `json:"templateId"`
 }
@@ -124,20 +125,35 @@ func (c Character) MarshalJSON() ([]byte, error) {
 		encyclopedia[entry.TplID] = true
 	}
 
+	blacklist := map[string]bool{
+		"55d7217a4bdc2d86028b456d": true,
+		"5963866286f7747bf429b572": true,
+		"5963866b86f7747bfa1c4462": true,
+		"602543c13fee350cd564d032": true,
+	}
+
 	// Add inventory items as false if not already in encyclopedia
 	for _, item := range c.Inventory.Items {
-		if _, exists := encyclopedia[item.Tpl]; !exists {
+		if _, exists := encyclopedia[item.Tpl]; !exists && !blacklist[item.Tpl] {
 			encyclopedia[item.Tpl] = false
 		}
 	}
 
+	fmt.Printf("c.TradersInfo: %v\n", c.TradersInfo)
+	tradersInfoMap := make(TradersInfoMap)
+	for _, traderInfo := range c.TradersInfo.Traders {
+		tradersInfoMap[traderInfo.TraderID] = traderInfo
+	}
+
 	return json.Marshal(&struct {
-		Achievements CharacterAchievementsMap `json:"achievements"`
+		Achievements CharacterAchievementsMap `json:"Achievements"`
 		Encyclopedia CharacterEncyclopedia    `json:"Encyclopedia"`
+		TradersInfo  TradersInfoMap           `json:"TradersInfo"`
 		*Alias
 	}{
 		Encyclopedia: encyclopedia,
 		Achievements: achievements,
+		TradersInfo:  tradersInfoMap,
 		Alias:        (*Alias)(&c),
 	})
 }
@@ -145,7 +161,8 @@ func (c Character) MarshalJSON() ([]byte, error) {
 func (c *Character) UnmarshalJSON(data []byte) error {
 	type Alias Character
 	aux := &struct {
-		Achievements CharacterAchievementsMap `json:"achievements"`
+		Achievements CharacterAchievementsMap `json:"Achievements"`
+		TradersInfo  TradersInfoMap           `json:"TradersInfo"`
 		*Alias
 	}{
 		Alias: (*Alias)(c),
@@ -160,6 +177,18 @@ func (c *Character) UnmarshalJSON(data []byte) error {
 			CharacterID: c.ID,
 			Name:        name,
 			Value:       value,
+		})
+	}
+
+	c.TradersInfo.Traders = make([]CharacterTraderInfo, 0, len(aux.TradersInfo))
+	for traderId, traderInfo := range aux.TradersInfo {
+		c.TradersInfo.Traders = append(c.TradersInfo.Traders, CharacterTraderInfo{
+			CharacterID: c.TradersInfo.CharacterID,
+			TraderID:    traderId,
+			Unlocked:    traderInfo.Unlocked,
+			Disabled:    traderInfo.Disabled,
+			SalesSum:    traderInfo.SalesSum,
+			Standing:    traderInfo.Standing,
 		})
 	}
 

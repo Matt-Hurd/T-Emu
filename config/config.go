@@ -79,4 +79,6 @@ end $$;`,
 	if tx2.Error != nil {
 		log.Fatalf("Failed to drop tables: %v", tx2.Error)
 	}
+
+	createSession("1")
 }

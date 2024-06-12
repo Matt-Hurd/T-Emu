@@ -10,7 +10,7 @@ import (
 )
 
 func GetProfileCharacters(c *gin.Context) {
-	id := c.Param("id")
+	id := "1"
 	var user models.Account
 
 	// Query the database with preloading related data
@@ -33,6 +33,7 @@ func GetProfileCharacters(c *gin.Context) {
 		Preload("Characters.RagfairInfo").
 		Preload("Characters.WishList").
 		Preload("Characters.TradersInfo").
+		Preload("Characters.TradersInfo.Traders").
 		Preload("Characters.UnlockedInfo").
 		First(&user, "id = ?", id).Error; err != nil {
 		helpers.JSONResponse(c, http.StatusNotFound, "User not found", nil)
