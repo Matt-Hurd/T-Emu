@@ -156,53 +156,59 @@ func SetupRouter() *gin.Engine {
 
 	r.POST("/profiles/:accountID", controllers.CreateProfile)
 
-	r.POST("/client/languages", controllers.GetLanguages)
-	r.POST("/client/items", controllers.GetItems)
-	r.POST("/client/items/prices", controllers.GetItemPrices)
+	r.POST("/client/achievement/list", controllers.GetAchievementList)
+	r.POST("/client/achievement/statistic", controllers.GetAchievementStatistic)
+	r.POST("/client/builds/list", controllers.GetHandbookBuildsMyList)
+	r.POST("/client/checkVersion", controllers.GetCheckVersion)
 	r.POST("/client/customization", controllers.GetCustomization)
 	r.POST("/client/globals", controllers.GetGlobals)
-	r.POST("/client/settings", controllers.GetSettings)
+	r.POST("/client/handbook/templates", controllers.GetHandbookTemplates)
+	r.POST("/client/items", controllers.GetItems)
+	r.POST("/client/items/prices", controllers.GetItemPrices)
+	r.POST("/client/languages", controllers.GetLanguages)
 	r.POST("/client/locale/en", controllers.GetLocaleEn)
-	r.POST("/client/weather", controllers.GetWeather)
-	r.POST("/client/quest/list", controllers.GetQuestList)
 	r.POST("/client/locations", controllers.GetLocations)
-	r.POST("/client/achievement/statistic", controllers.GetAchievementStatistic)
-	r.POST("/client/achievement/list", controllers.GetAchievementList)
+	r.POST("/client/mail/dialog/list", controllers.GetMailDialogList)
+	r.POST("/client/notifier/channel/create", controllers.CreateNotifierChannel)
+	r.POST("/client/profile/status", controllers.GetProfileStatus)
+	r.POST("/client/quest/list", controllers.GetQuestList)
+	r.POST("/client/raid/configuration", controllers.GetRaidConfiguration)
+	r.POST("/client/repeatalbeQuests/activityPeriods", controllers.GetRepeatableQuestsActivityPeriods)
+	r.POST("/client/server/list", controllers.GetServerList)
+	r.POST("/client/settings", controllers.GetSettings)
+	r.POST("/client/weather", controllers.GetWeather)
+	r.POST("/client/getMetricsConfig", controllers.GetMetricsConfig)
 
 	r.POST("/client/menu/locale/en", menu.GetMenuLocaleEn)
 
-	r.POST("/client/game/mode", game.GetGameMode)
-	r.POST("/client/game/start", game.GameStart)
-	r.POST("/client/game/version/validate", game.VersionValidate)
 	r.POST("/client/game/config", game.GetGameConfig)
+	r.POST("/client/game/mode", game.GetGameMode)
 	r.POST("/client/game/profile/list", game.ProfileList)
 	r.POST("/client/game/profile/select", game.ProfileSelect)
-	r.POST("/client/handbook/templates", controllers.GetHandbookTemplates)
-	r.POST("/client/builds/list", controllers.GetHandbookBuildsMyList)
-	r.POST("/client/server/list", controllers.GetServerList)
-
-	r.POST("/client/profile/status", controllers.GetProfileStatus)
+	r.POST("/client/game/start", game.GameStart)
+	r.POST("/client/game/version/validate", game.VersionValidate)
 
 	r.POST("/client/trading/api/traderSettings", trading.GetTraderSettings)
 	r.POST("/client/trading/customization/storage", trading.GetCustomizationStorage)
 
 	r.POST("/client/hideout/areas", hideout.GetHideoutAreas)
-	r.POST("/client/hideout/qte/list", hideout.GetHideoutQteList)
-	r.POST("/client/hideout/settings", hideout.GetHideoutSettings)
 	r.POST("/client/hideout/production/recipes", hideout.GetHideoutProductionRecipes)
 	r.POST("/client/hideout/production/scavcase/recipes", hideout.GetHideoutProductionScavcaseRecipes)
-
-	r.POST("/client/repeatalbeQuests/activityPeriods", controllers.GetRepeatableQuestsActivityPeriods)
-
-	r.POST("/client/notifier/channel/create", controllers.CreateNotifierChannel)
+	r.POST("/client/hideout/qte/list", hideout.GetHideoutQteList)
+	r.POST("/client/hideout/settings", hideout.GetHideoutSettings)
 
 	r.POST("/client/friend/list", friend.GetFriendList)
 	r.POST("/client/friend/request/list/inbox", friend.GetFriendRequestListInbox)
 	r.POST("/client/friend/request/list/outbox", friend.GetFriendRequestListOutbox)
 
-	r.POST("/client/mail/dialog/list", controllers.GetMailDialogList)
-
+	r.POST("/client/match/available", match.GetMatchAvailable)
 	r.POST("/client/match/group/current", match.GetMatchGroupCurrent)
+	r.POST("/client/match/group/exit_from_menu", match.ExitGroupFromMenu)
+	r.POST("/client/match/group/invite/cancel-all", match.CancelAllGroupInvites)
+	r.POST("/client/match/join", match.MatchJoin)
+
+	// "/client/ragfair/find"
+	// "/client/items/prices/:itemId"
 
 	return r
 }

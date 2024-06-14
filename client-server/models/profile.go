@@ -50,6 +50,7 @@ type Profile struct {
 	TradersInfo           ProfileTradersInfo    `gorm:"constraint:OnUpdate:CASCADE"`
 	UnlockedInfo          ProfileUnlockedInfo   `gorm:"constraint:OnUpdate:CASCADE"`
 	Status                ProfileStatus         `gorm:"constraint:OnUpdate:CASCADE;foreignKey:ProfileID" json:"-"`
+	NotificationChannel   string                `json:"-"`
 }
 
 type ProfileCustomization struct {
@@ -115,12 +116,18 @@ type ProfileUnlockedInfo struct {
 }
 
 type ProfileStatus struct {
-	ProfileID    string  `gorm:"primaryKey" json:"profileid"`
-	ProfileToken *string `json:"profiletoken"`
-	Status       string  `json:"status" gorm:"default:Free"`
-	ServerId     string  `json:"sid"`
-	IP           string  `json:"ip"`
-	Port         int     `json:"port"`
+	ProfileID      string         `gorm:"primaryKey" json:"profileid"`
+	ProfileToken   *string        `json:"profileToken"`
+	Status         string         `json:"status" gorm:"default:Free"`
+	ServerId       string         `json:"sid"`
+	IP             string         `json:"ip"`
+	Port           int            `json:"port"`
+	Version        string         `json:"version"`
+	Location       string         `json:"location"`
+	RaidMode       string         `json:"raidMode"`
+	Mode           string         `json:"mode"`
+	ShortID        *string        `json:"shortId"`
+	AdditionalInfo datatypes.JSON `json:"additional_info"`
 }
 
 func (c Profile) MarshalJSON() ([]byte, error) {

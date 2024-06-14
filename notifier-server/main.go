@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"notifier-server/controllers"
 	"notifier-server/db"
-	"notifier-server/handlers"
 	"notifier-server/websocket"
 
 	"github.com/gin-gonic/gin"
@@ -23,11 +23,12 @@ func main() {
 
 	router := gin.Default()
 
-	router.POST("/create-channel", handlers.CreateChannel)
-	router.DELETE("/delete-channel/:channel_id", handlers.DeleteChannel)
-	router.POST("/send-notification", handlers.SendNotification)
-	router.GET("/push/notifier/get/:channelid", func(c *gin.Context) {
-		websocket.HandleConnections(c.Writer, c.Request)
+	router.POST("/create-channel", controllers.CreateChannel)
+	router.DELETE("/delete-channel/:channel_id", controllers.DeleteChannel)
+	router.POST("/send-notification", controllers.SendNotification)
+	router.GET("/push/notifier/getwebsocket/:channelid", func(c *gin.Context) {
+		channelID := c.Param("channelid")
+		websocket.HandleConnections(c.Writer, c.Request, channelID)
 	})
 
 	log.Fatal(http.ListenAndServe(":8090", router))

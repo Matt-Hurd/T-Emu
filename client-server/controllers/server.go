@@ -3,6 +3,7 @@ package controllers
 import (
 	"client-server/helpers"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,8 +11,11 @@ import (
 func GetServerList(c *gin.Context) {
 	helpers.JSONResponse(c, http.StatusOK, "", []map[string]interface{}{
 		{
-			"ip":   "127.0.0.1",
-			"port": 9090,
+			"ip":   os.Getenv("GAME_SERVER_ADDRESS"),
+			"port": os.Getenv("GAME_SERVER_PORT"),
+		}, {
+			"ip":   os.Getenv("GAME_SERVER_ADDRESS"),
+			"port": os.Getenv("GAME_SERVER_PORT"),
 		},
 	})
 }

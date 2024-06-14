@@ -2,6 +2,7 @@
 package websocket
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -21,7 +22,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func HandleConnections(w http.ResponseWriter, r *http.Request) {
+func HandleConnections(w http.ResponseWriter, r *http.Request, channelID string) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -29,7 +30,6 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	channelID := r.URL.Query().Get("channel_id")
 	if channelID == "" {
 		log.Println("ChannelID is required")
 		return
@@ -53,7 +53,7 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for {
-		_, _, err := ws.ReadMessage()
+		_, msg, err := ws.ReadMessage()
 		if err != nil {
 			ChannelsMutex.Lock()
 			delete(Channels[channelID], ws)
@@ -62,6 +62,8 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 			}
 			ChannelsMutex.Unlock()
 			break
+		} else {
+			fmt.Printf("Received message: %s\n", string(msg))
 		}
 	}
 }

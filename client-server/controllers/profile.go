@@ -9,9 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type LimitedProfileStatus struct {
+	ProfileID    string  `gorm:"primaryKey" json:"profileid"`
+	ProfileToken *string `json:"profileToken"`
+	Status       string  `json:"status" gorm:"default:Free"`
+	ServerId     string  `json:"sid"`
+	IP           string  `json:"ip"`
+	Port         int     `json:"port"`
+}
+
 type ProfileStatusRequest struct {
-	MaxPveCountExceeded bool                   `json:"maxPveCountExceeded"`
-	Profiles            []models.ProfileStatus `json:"profiles"`
+	MaxPveCountExceeded bool          `json:"maxPveCountExceeded"`
+	Profiles            []interface{} `json:"profiles"`
 }
 
 func GetProfileStatus(c *gin.Context) {
@@ -25,9 +34,20 @@ func GetProfileStatus(c *gin.Context) {
 		return
 	}
 
-	var profiles []models.ProfileStatus
+	var profiles []interface{}
 	for _, profile := range user.Profiles {
-		profiles = append(profiles, profile.Status)
+		if profile.Status.Status == "Free" {
+			profiles = append(profiles, LimitedProfileStatus{
+				ProfileID:    profile.ID,
+				ProfileToken: profile.Status.ProfileToken,
+				Status:       profile.Status.Status,
+				ServerId:     profile.Status.ServerId,
+				IP:           profile.Status.IP,
+				Port:         profile.Status.Port,
+			})
+		} else {
+			profiles = append(profiles, profile.Status)
+		}
 	}
 
 	response := ProfileStatusRequest{
@@ -36,5 +56,4 @@ func GetProfileStatus(c *gin.Context) {
 	}
 
 	helpers.JSONResponse(c, http.StatusOK, "", response)
-
 }

@@ -1,5 +1,4 @@
-// handlers/notifications.go
-package handlers
+package controllers
 
 import (
 	"net/http"

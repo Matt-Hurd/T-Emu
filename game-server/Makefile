@@ -1,6 +1,6 @@
 # Variables
 GO=go
-PROJECT_NAME=notifier-server
+PROJECT_NAME=game-server
 BUILD_DIR=bin
 
 # Build the project

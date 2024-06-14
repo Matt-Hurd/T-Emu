@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"bytes"
+	"client-server/config"
 	"client-server/helpers"
+	"client-server/models"
 	"crypto/tls"
 	"encoding/json"
 	"net/http"
@@ -19,13 +21,13 @@ type CreateNotifierChannelResponse struct {
 	Server         string `json:"server"`
 	ChannelID      string `json:"channel_id"`
 	URL            string `json:"url"`
-	NotifierServer string `json:"notifier_server"`
+	NotifierServer string `json:"notifierServer"`
 	WS             string `json:"ws"`
 }
 
 func CreateNotifierChannel(c *gin.Context) {
 	notifierServerURL := os.Getenv("NOTIFIER_SERVER_URL")
-	url := "https://" + notifierServerURL + "/create-channel"
+	url := "http://" + notifierServerURL + "/create-channel"
 
 	customTransport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -45,12 +47,24 @@ func CreateNotifierChannel(c *gin.Context) {
 		return
 	}
 
+	var profile models.Profile
+	id := config.GetSession(c).ProfileID
+	if err := config.DB.First(&profile, "id = ?", id).Error; err != nil {
+		helpers.JSONResponse(c, http.StatusNotFound, "Profile not found", nil)
+		return
+	}
+	profile.NotificationChannel = createChannelResp.ChannelID
+	if err := config.DB.Updates(&profile).Error; err != nil {
+		helpers.JSONResponse(c, http.StatusInternalServerError, "Failed to update profile notification channel", nil)
+		return
+	}
+
 	respData := CreateNotifierChannelResponse{
 		Server:         notifierServerURL,
 		ChannelID:      createChannelResp.ChannelID,
 		URL:            "",
-		NotifierServer: "https://" + notifierServerURL + "/push/notifier/get/" + createChannelResp.ChannelID,
-		WS:             "wss://" + notifierServerURL + "/push/notifier/getwebsocket/" + createChannelResp.ChannelID,
+		NotifierServer: "http://" + notifierServerURL + "/push/notifier/get/" + createChannelResp.ChannelID,
+		WS:             "ws://" + notifierServerURL + "/push/notifier/getwebsocket/" + createChannelResp.ChannelID,
 	}
 
 	helpers.JSONResponse(c, http.StatusOK, "", respData)
