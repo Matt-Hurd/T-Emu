@@ -15,5 +15,5 @@ func NewReliableHandler(kcpHandler *kcp.KCPHandler) *ReliableHandler {
 }
 
 func (h *ReliableHandler) HandlePacket(data []byte, addr *net.UDPAddr) {
-	h.kcpHandler.HandlePacket(data, addr)
+	h.kcpHandler.HandleReliablePacket(data, addr)
 }

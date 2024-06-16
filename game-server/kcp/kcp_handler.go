@@ -4,55 +4,44 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 
-	"game-server/models"
+	"game-server/controllers"
 	"game-server/udp"
 
 	kcp "github.com/xtaci/kcp-go/v5"
 )
 
 type KCPHandler struct {
-	kcpSessions map[string]*kcp.UDPSession
-	udpConns    map[string]*udp.UDPConn
+	KcpSessions map[string]*kcp.UDPSession
+	UdpConns    map[string]*udp.UDPConn
 	mutex       sync.Mutex
 	conn        *net.UDPConn
 }
 
 func NewKCPHandler(conn *net.UDPConn) *KCPHandler {
 	return &KCPHandler{
-		kcpSessions: make(map[string]*kcp.UDPSession),
-		udpConns:    make(map[string]*udp.UDPConn),
+		KcpSessions: make(map[string]*kcp.UDPSession),
+		UdpConns:    make(map[string]*udp.UDPConn),
 		conn:        conn,
 	}
 }
 
-func (h *KCPHandler) HandlePacket(data []byte, addr *net.UDPAddr) {
-	if len(data) == 0 {
-		return
-	}
-
-	switch data[0] {
-	case 1:
-		h.handleReliablePacket(data[3:], addr)
-	case 2:
-		h.handleUnreliablePacket(data[3:], addr)
-	}
-}
-
-func (h *KCPHandler) handleReliablePacket(data []byte, addr *net.UDPAddr) {
+func (h *KCPHandler) HandleReliablePacket(data []byte, addr *net.UDPAddr) {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 
-	udpConn, exists := h.udpConns[addr.String()]
+	udpConn, exists := h.UdpConns[addr.String()]
 	if !exists {
 		udpConn = &udp.UDPConn{
 			Conn:       h.conn,
 			Buffer:     make([]byte, len(data)),
 			Addr:       addr,
 			ReadSignal: make(chan struct{}, 1),
+			Start:      time.Now(),
 		}
 		copy(udpConn.Buffer, data)
-		h.udpConns[addr.String()] = udpConn
+		h.UdpConns[addr.String()] = udpConn
 
 		var err error
 		session, err := kcp.NewConn3(0, addr, nil, 10, 3, udpConn)
@@ -62,9 +51,9 @@ func (h *KCPHandler) handleReliablePacket(data []byte, addr *net.UDPAddr) {
 		}
 		session.SetNoDelay(1, 20, 2, 1)
 		session.SetWindowSize(256, 256)
-		session.SetMtu(1197)
-		h.kcpSessions[addr.String()] = session
-		go h.handleKCPSession(session)
+		session.SetMtu(1205)
+		h.KcpSessions[addr.String()] = session
+		go h.handleKCPSession(session, udpConn)
 	} else {
 		udpConn.Mutex.Lock()
 		udpConn.Buffer = make([]byte, len(data))
@@ -75,11 +64,7 @@ func (h *KCPHandler) handleReliablePacket(data []byte, addr *net.UDPAddr) {
 	udpConn.ReadSignal <- struct{}{}
 }
 
-func (h *KCPHandler) handleUnreliablePacket(data []byte, addr *net.UDPAddr) {
-	log.Printf("Received Unreliable packet from %s: %x\n", addr, data)
-}
-
-func (h *KCPHandler) handleKCPSession(session *kcp.UDPSession) {
+func (h *KCPHandler) handleKCPSession(session *kcp.UDPSession, conn *udp.UDPConn) {
 	defer session.Close()
 
 	buffer := make([]byte, 1024)
@@ -90,23 +75,6 @@ func (h *KCPHandler) handleKCPSession(session *kcp.UDPSession) {
 			return
 		}
 
-		packet, err := models.ParsePacket(buffer[:n])
-		if err != nil {
-			log.Printf("Error parsing packet: %v", err)
-			continue
-		}
-
-		switch p := packet.(type) {
-		case *models.ConnectPacket:
-			h.handleConnectPacket(session, p)
-		default:
-			log.Printf("Unhandled packet type: %d", packet.Type())
-		}
+		controllers.HandlePacket(session, buffer[:n], conn)
 	}
-}
-
-func (h *KCPHandler) handleConnectPacket(session *kcp.UDPSession, packet *models.ConnectPacket) {
-	log.Printf("Received ConnectPacket: Syn=%x, Asc=%x", packet.Syn, packet.Asc)
-	session.Write([]byte{1, 1})
-	// Handle login logic here
 }

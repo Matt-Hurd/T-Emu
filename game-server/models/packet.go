@@ -1,44 +1,25 @@
 package models
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
 )
 
 // Define various packet types
 const (
 	PacketTypeConnect = iota + 1
+	PacketTypePing
+	PacketTypePong
+	PacketTypeData
+	PacketTypeDisconnect
+	PacketTypeFragment = iota + 0x80
+	PacketTypeFragmentEnd
 )
 
 // Packet interface
 type Packet interface {
 	Type() byte
 	Parse([]byte) error
-}
-
-// LoginPacket structure
-type ConnectPacket struct {
-	Syn byte
-	Asc byte
-}
-
-func (p *ConnectPacket) Type() byte {
-	return PacketTypeConnect
-}
-
-func (p *ConnectPacket) Parse(data []byte) error {
-	buffer := bytes.NewBuffer(data)
-	syn, err := buffer.ReadByte()
-	if err != nil {
-		return err
-	}
-	asc, err2 := buffer.ReadByte()
-	if err2 != nil {
-		return err
-	}
-	p.Syn = syn
-	p.Asc = asc
-	return nil
 }
 
 func ParsePacket(data []byte) (Packet, error) {
@@ -52,7 +33,12 @@ func ParsePacket(data []byte) (Packet, error) {
 	switch packetType {
 	case PacketTypeConnect:
 		packet = &ConnectPacket{}
+	case PacketTypePing:
+		packet = &PingPacket{}
+	case PacketTypeData:
+		packet = &DataPacket{}
 	default:
+		fmt.Printf("Unknown packet type: %d\n", packetType)
 		return nil, errors.New("unknown packet type")
 	}
 

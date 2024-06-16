@@ -14,6 +14,7 @@ type UDPConn struct {
 	Mutex      sync.Mutex
 	ReadSignal chan struct{}
 	SendCount  int
+	Start      time.Time
 }
 
 func (c *UDPConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
@@ -21,11 +22,10 @@ func (c *UDPConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
 
-	if len(c.Buffer) > 0 {
-		n = copy(p, c.Buffer)
+	if c.Buffer != nil && len(c.Buffer) > 0 {
+		n = copy(p, c.Buffer[3:])
 		addr = c.Addr
 		c.Buffer = nil
-		fmt.Printf("Read %d bytes from %s: %x\n", n, addr, p[:n])
 		return n, addr, nil
 	}
 	return 0, nil, nil
@@ -38,7 +38,17 @@ func (c *UDPConn) WriteTo(p []byte, addr net.Addr) (n int, err error) {
 	buf[1] = byte(c.SendCount & 0xFF)
 	buf[2] = byte((c.SendCount & 0xFF00) >> 8)
 	buf = append(buf, p[8:]...)
-	fmt.Printf("Writing %d bytes to %s: %x\n", len(buf), addr, buf)
+	fmt.Printf("Sent message: %x\n", buf)
+	return c.Conn.WriteTo(buf, addr)
+}
+
+func (c *UDPConn) WriteToUnreliable(p []byte, addr net.Addr) (n int, err error) {
+	buf := make([]byte, 3)
+	c.SendCount += 1
+	buf[0] = 2
+	buf[1] = byte(c.SendCount & 0xFF)
+	buf[2] = byte((c.SendCount & 0xFF00) >> 8)
+	buf = append(buf, p...)
 	return c.Conn.WriteTo(buf, addr)
 }
 
