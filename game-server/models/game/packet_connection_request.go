@@ -14,7 +14,7 @@ type PacketConnectionRequest struct {
 	LocationId       string
 }
 
-func (p *PacketConnectionRequest) Parse(buffer *bytes.Buffer) error {
+func (p *PacketConnectionRequest) Deserialize(buffer *bytes.Buffer) error {
 	if err := helpers.ReadString(buffer, &p.ProfileID); err != nil {
 		return err
 	}

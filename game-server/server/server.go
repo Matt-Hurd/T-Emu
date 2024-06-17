@@ -1,25 +1,22 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"time"
 
-	"game-server/controllers"
-	"game-server/handlers"
 	"game-server/kcp"
-	"game-server/models"
 )
 
 type Server struct {
-	kcpHandler      *kcp.KCPHandler
-	reliableHandler *handlers.ReliableHandler
-	conn            *net.UDPConn
+	// kcpHandler      *kcp.KCPHandler
+	// reliableHandler *handlers.ReliableHandler
+	clients map[string]*kcp.GClass2486
+	conn    *net.UDPConn
 }
 
 func NewServer() *Server {
-	return &Server{}
+	return &Server{clients: make(map[string]*kcp.GClass2486)}
 }
 
 func (srv *Server) Start() error {
@@ -34,17 +31,16 @@ func (srv *Server) Start() error {
 	srv.conn = conn
 	defer conn.Close()
 
-	srv.kcpHandler = kcp.NewKCPHandler(conn)
-	srv.reliableHandler = handlers.NewReliableHandler(srv.kcpHandler)
+	// srv.kcpHandler = kcp.NewKCPHandler(conn)
+	// srv.reliableHandler = handlers.NewReliableHandler(srv.kcpHandler)
 
 	log.Println("Combined KCP/UDP server listening on port 9090")
 
 	go srv.PacketHandlerLoop()
 	for {
-		time.Sleep(500 * time.Millisecond)
-		for _, conn := range srv.kcpHandler.UdpConns {
-			packet := &models.PingPacket{}
-			conn.WriteToUnreliable(packet.Write(uint32(time.Since(conn.Start).Milliseconds())), conn.Addr)
+		time.Sleep(10 * time.Millisecond)
+		for _, conn := range srv.clients {
+			conn.EarlyUpdate()
 		}
 	}
 }
@@ -63,18 +59,24 @@ func (srv *Server) PacketHandlerLoop() {
 }
 
 func (srv *Server) handlePacket(data []byte, addr *net.UDPAddr) {
-	if len(data) == 0 {
-		return
-	}
+	// if len(data) == 0 {
+	// 	return
+	// }
 
-	fmt.Printf("Received packet from %s: %x\n", addr, data)
+	// fmt.Printf("Received packet from %s: %x\n", addr, data)
 
-	switch data[0] {
-	case 1:
-		srv.reliableHandler.HandlePacket(data, addr)
-	case 2:
-		controllers.HandlePacket(srv.kcpHandler.KcpSessions[addr.String()], data, srv.kcpHandler.UdpConns[addr.String()])
-	default:
-		log.Printf("Unknown packet type: %d\n", data[0])
+	if _, exists := srv.clients[addr.String()]; !exists {
+		srv.clients[addr.String()] = kcp.NewGClass2486(srv.conn, addr, kcp.NewGClass2485())
 	}
+	srv.clients[addr.String()].HandleReceive(data, len(data))
+	srv.clients[addr.String()].HandleReceiveReliableFinite()
+
+	// switch data[0] {
+	// case 1:
+	// 	srv.reliableHandler.HandlePacket(data, addr)
+	// case 2:
+	// 	controllers.HandlePacket(srv.kcpHandler.KcpSessions[addr.String()], data, srv.kcpHandler.UdpConns[addr.String()])
+	// default:
+	// 	log.Printf("Unknown packet type: %d\n", data[0])
+	// }
 }

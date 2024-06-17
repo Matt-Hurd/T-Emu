@@ -36,7 +36,7 @@ func (p *DataPacket) Parse(data []byte) error {
 	switch p.GamePacketType {
 	case 147:
 		res := &game.PacketConnectionRequest{}
-		err := res.Parse(buffer)
+		err := res.Deserialize(buffer)
 		if err != nil {
 			return err
 		}
