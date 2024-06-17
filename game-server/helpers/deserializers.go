@@ -70,6 +70,10 @@ func ReadInt32(buffer *bytes.Buffer, result *int32) error {
 	return binary.Read(buffer, binary.LittleEndian, result)
 }
 
+func ReadInt64(buffer *bytes.Buffer, result *int64) error {
+	return binary.Read(buffer, binary.LittleEndian, result)
+}
+
 func ReadFloat32(buffer *bytes.Buffer, result *float32) error {
 	return binary.Read(buffer, binary.LittleEndian, result)
 }

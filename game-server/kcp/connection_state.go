@@ -3,21 +3,13 @@ package kcp
 import (
 	"fmt"
 
+	"game-server/models"
+
 	"github.com/rs/zerolog/log"
 )
 
-type Logger struct{}
-
-func (l *Logger) LogInfo(msg string, args ...interface{}) {
-	fmt.Printf(msg+"\n", args...)
-}
-
-func (l *Logger) LogError(msg string, args ...interface{}) {
-	fmt.Printf(msg+"\n", args...)
-}
-
 type Message struct {
-	Type    NetworkMessageType
+	Type    models.NetworkMessageType
 	Buffer  []byte
 	Dispose func()
 }
@@ -62,23 +54,23 @@ func (cs *ConnectionState) Exit() {
 	log.Info().Msg(fmt.Sprintf("Exit state (address: %s)", cs.Connection.Address()))
 }
 
-func (cs *ConnectionState) HandleReceive(msg *GClass2498) {
+func (cs *ConnectionState) HandleReceive(msg *models.GClass2498) {
 	switch cs.State {
 	case Initial:
-		if msg.Type == NetworkMessageTypeConnect {
+		if msg.Type == models.NetworkMessageTypeConnect {
 			cs.Enter(Connecting)
 			cs.Connection.SendConnect(true, true)
 			// msg.Dispose()
 		}
 	case Connecting:
-		if msg.Type == NetworkMessageTypeConnect {
+		if msg.Type == models.NetworkMessageTypeConnect {
 			cs.Enter(Connected)
 			if msg.Buffer[0] == 1 {
 				cs.Connection.SendConnect(false, true)
 			}
 			cs.Connection.ReturnConnect()
 			// msg.Dispose()
-		} else if msg.Type == NetworkMessageTypeData {
+		} else if msg.Type == models.NetworkMessageTypeData {
 			cs.Connection.ReceiveQueue <- msg
 		}
 		// else {
@@ -86,15 +78,15 @@ func (cs *ConnectionState) HandleReceive(msg *GClass2498) {
 		// }
 	case Connected:
 		switch msg.Type {
-		case NetworkMessageTypePing:
+		case models.NetworkMessageTypePing:
 			cs.Connection.HandlePingReceiving(msg.Buffer, len(msg.Buffer))
 			// msg.Dispose()
-		case NetworkMessageTypePong:
+		case models.NetworkMessageTypePong:
 			cs.Connection.HandlePongReceiving(msg.Buffer, len(msg.Buffer))
 			// msg.Dispose()
-		case NetworkMessageTypeData:
+		case models.NetworkMessageTypeData:
 			cs.Connection.ReceiveQueue <- msg
-		case NetworkMessageTypeDisconnect:
+		case models.NetworkMessageTypeDisconnect:
 			log.Info().Msg(fmt.Sprintf("Receive disconnect (address: %s)", cs.Connection.Address()))
 			cs.Connection.ReturnDisconnect()
 			cs.Enter(Disconnected)
@@ -103,7 +95,7 @@ func (cs *ConnectionState) HandleReceive(msg *GClass2498) {
 			// msg.Dispose()
 		}
 	case Waiting:
-		if msg.Type == NetworkMessageTypeConnect {
+		if msg.Type == models.NetworkMessageTypeConnect {
 			cs.Enter(Connected)
 			cs.HandleReceive(msg)
 		}
@@ -134,7 +126,7 @@ func (cs *ConnectionState) Disconnect() {
 	cs.Enter(Disconnected)
 }
 
-func (cs *ConnectionState) Send(msg *GClass2498) {
+func (cs *ConnectionState) Send(msg *models.GClass2498) {
 	cs.Connection.SendQueue <- msg
 }
 

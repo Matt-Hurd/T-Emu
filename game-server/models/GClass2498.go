@@ -1,4 +1,4 @@
-package kcp
+package models
 
 type NetworkChannel byte
 
@@ -18,3 +18,9 @@ const (
 	NetworkMessageTypeData
 	NetworkMessageTypeDisconnect
 )
+
+type GClass2498 struct {
+	Channel NetworkChannel
+	Type    NetworkMessageType
+	Buffer  []byte
+}

@@ -1,4 +1,4 @@
-package game
+package response
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type PacketConnectionResponse struct {
+type PacketConnection struct {
 	EncryptionEnabled        bool
 	DecryptionEnabled        bool
 	GameDateTime             core.GameDateTime
@@ -34,7 +34,7 @@ type PacketConnectionResponse struct {
 type EMemberCategory int32
 type ENetLogsLevel byte
 
-func (rp *PacketConnectionResponse) Deserialize(buffer *bytes.Buffer) error {
+func (rp *PacketConnection) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 
 	if err = helpers.ReadBool(buffer, &rp.EncryptionEnabled); err != nil {
@@ -129,7 +129,7 @@ func (rp *PacketConnectionResponse) Deserialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (rp *PacketConnectionResponse) Serialize(buffer *bytes.Buffer) error {
+func (rp *PacketConnection) Serialize(buffer *bytes.Buffer) error {
 	var err error
 
 	if err = helpers.WriteBool(buffer, rp.EncryptionEnabled); err != nil {
@@ -203,7 +203,7 @@ func (rp *PacketConnectionResponse) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (rp *PacketConnectionResponse) DebugPrintAll() {
+func (rp *PacketConnection) DebugPrintAll() {
 	log.Printf("EncryptionEnabled: %v\n", rp.EncryptionEnabled)
 	log.Printf("DecryptionEnabled: %v\n", rp.DecryptionEnabled)
 	log.Printf("GameDateTime: %v\n", rp.GameDateTime)
@@ -225,7 +225,7 @@ func (rp *PacketConnectionResponse) DebugPrintAll() {
 	log.Printf("VoipSettings: %v\n", rp.VoipSettings)
 }
 
-func (rp *PacketConnectionResponse) GetDefault() {
+func (rp *PacketConnection) GetDefault() {
 
 	resourceArray, err := helpers.FileToZlibCompressed(filepath.Join("static/", "customs_connection_response_resource_key.json"))
 	if err != nil {

@@ -1,12 +1,10 @@
 package kcp
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"game-server/helpers"
 	"game-server/models"
-	"game-server/models/game"
 	"net"
 	"os"
 	"sync"
@@ -32,8 +30,8 @@ type GClass2486 struct {
 	byte_1          []byte
 	ushort_0        uint16
 	ushort_1        uint16
-	SendQueue       chan *GClass2498
-	ReceiveQueue    chan *GClass2498
+	SendQueue       chan *models.GClass2498
+	ReceiveQueue    chan *models.GClass2498
 	mu              sync.Mutex
 }
 
@@ -48,8 +46,8 @@ func NewGClass2486(socket *net.UDPConn, socketAddress *net.UDPAddr, configuratio
 		byte_0:       make([]byte, 149224),
 		byte_1:       make([]byte, 1200),
 		ushort_1:     65535,
-		SendQueue:    make(chan *GClass2498, 100),
-		ReceiveQueue: make(chan *GClass2498, 16),
+		SendQueue:    make(chan *models.GClass2498, 100),
+		ReceiveQueue: make(chan *models.GClass2498, 16),
 	}
 	g.gclass2487_0 = NewConnectionState(g)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -65,72 +63,14 @@ func NewGClass2486(socket *net.UDPConn, socketAddress *net.UDPAddr, configuratio
 
 func (g *GClass2486) processReceiveQueue() {
 	for msg := range g.ReceiveQueue {
-		fmt.Println("Processing received message:", msg)
-		if msg.Type == NetworkMessageTypeData {
-			packet := models.DataPacket{}
-			packet.Parse(msg.Buffer)
-			if packet.GamePacketType == 147 {
-				// bigPacket := MakeBigPacket()
-				connectionResponse := &game.PacketConnectionResponse{}
-				connectionResponse.GetDefault()
-
-				buffer := bytes.Buffer{}
-				err := connectionResponse.Serialize(&buffer)
-				if err != nil {
-					fmt.Println("Error deserializing connection response:", err)
-				}
-
-				data := make([]byte, 4)
-				binary.LittleEndian.PutUint16(data[:2], uint16(buffer.Len()))
-				binary.LittleEndian.PutUint16(data[2:], 147)
-				data = append(data, buffer.Bytes()...)
-
-				packet := &GClass2498{
-					Channel: NetworkChannelReliable,
-					Type:    NetworkMessageTypeData,
-					Buffer:  data,
-				}
-				g.SendQueue <- packet
-
-				nightmare := &game.NightMare{
-					Id: 0,
-				}
-
-				nightmare.PrefabsData, err = helpers.CompressZlib([]byte("[]"))
-				if err != nil {
-					fmt.Println("Error compressing prefabs data:", err)
-				}
-
-				nightmare.CustomizationData, err = helpers.CompressZlib([]byte(`["66043cc27502eca33a08cad0","5e9dc97c86f774054c19ac9a"]`))
-				if err != nil {
-					fmt.Println("Error compressing customization data:", err)
-				}
-
-				buffer2 := bytes.Buffer{}
-				err = nightmare.Serialize(&buffer2)
-				if err != nil {
-					fmt.Println("Error deserializing connection response:", err)
-				}
-
-				data = make([]byte, 4)
-				binary.LittleEndian.PutUint16(data[:2], uint16(buffer2.Len()))
-				binary.LittleEndian.PutUint16(data[2:], 0xBC)
-				data = append(data, buffer2.Bytes()...)
-
-				packet = &GClass2498{
-					Channel: NetworkChannelReliable,
-					Type:    NetworkMessageTypeData,
-					Buffer:  data,
-				}
-				g.SendQueue <- packet
-			}
+		if msg.Type == models.NetworkMessageTypeData {
+			HandleDataPacket(msg, g)
 		}
 	}
 }
 
 func (g *GClass2486) processSendQueue() {
 	for msg := range g.SendQueue {
-		fmt.Println("Processing sent message:", msg)
 		g.SendFinite(msg)
 	}
 }
@@ -175,25 +115,25 @@ func (g *GClass2486) HandlePongReceiving(buffer []byte, count int) {
 }
 
 func (g *GClass2486) ReturnConnect() {
-	g.ReceiveQueue <- g.Get(NetworkChannelUnreliable, NetworkMessageTypeConnect, nil)
+	g.ReceiveQueue <- g.Get(models.NetworkChannelUnreliable, models.NetworkMessageTypeConnect, nil)
 }
 
 func (g *GClass2486) ReturnDisconnect() {
-	g.ReceiveQueue <- g.Get(NetworkChannelUnreliable, NetworkMessageTypeDisconnect, nil)
+	g.ReceiveQueue <- g.Get(models.NetworkChannelUnreliable, models.NetworkMessageTypeDisconnect, nil)
 }
 
 func (g *GClass2486) SendConnect(syn, asc bool) {
 	g.logger.Info().Msg(fmt.Sprintf("Send connect (address: %s, syn: %t, asc: %t)", g.gclass2483_0, syn, asc))
-	g.SendFinite(g.Get(NetworkChannelReliable, NetworkMessageTypeConnect, []byte{helpers.BoolToByte(syn), helpers.BoolToByte(asc)}))
+	g.SendFinite(g.Get(models.NetworkChannelReliable, models.NetworkMessageTypeConnect, []byte{helpers.BoolToByte(syn), helpers.BoolToByte(asc)}))
 }
 
 func (g *GClass2486) SendPing() {
-	g.SendFinite(g.Get(NetworkChannelUnreliable, NetworkMessageTypePing, helpers.UInt32ToBytes(g.CurrentTime())))
+	g.SendFinite(g.Get(models.NetworkChannelUnreliable, models.NetworkMessageTypePing, helpers.UInt32ToBytes(g.CurrentTime())))
 }
 
 func (g *GClass2486) SendDisconnect() {
 	g.logger.Info().Msg(fmt.Sprintf("Send disconnect (address: %s)", g.gclass2483_0))
-	g.SendFinite(g.Get(NetworkChannelUnreliable, NetworkMessageTypeDisconnect, nil))
+	g.SendFinite(g.Get(models.NetworkChannelUnreliable, models.NetworkMessageTypeDisconnect, nil))
 }
 
 func (g *GClass2486) HandlePing() {
@@ -220,18 +160,18 @@ func (g *GClass2486) GetLossCount() int {
 	return int(g.gclass2500_0.lose.averageLoseCountValue)
 }
 
-func (g *GClass2486) Send(message *GClass2498) {
+func (g *GClass2486) Send(message *models.GClass2498) {
 	g.gclass2487_0.Send(message)
 }
 
-func (g *GClass2486) Get(channel NetworkChannel, messageType NetworkMessageType, buffer []byte) *GClass2498 {
+func (g *GClass2486) Get(channel models.NetworkChannel, messageType models.NetworkMessageType, buffer []byte) *models.GClass2498 {
 	return GetOffset(channel, messageType, buffer, 0, len(buffer))
 }
 
-func GetOffset(channel NetworkChannel, messageType NetworkMessageType, buffer []byte, offset int, count int) *GClass2498 {
+func GetOffset(channel models.NetworkChannel, messageType models.NetworkMessageType, buffer []byte, offset int, count int) *models.GClass2498 {
 	array := make([]byte, count)
 	copy(array, buffer[offset:offset+count])
-	gclass := &GClass2498{
+	gclass := &models.GClass2498{
 		Channel: channel,
 		Type:    messageType,
 		Buffer:  array[:count],
@@ -240,7 +180,7 @@ func GetOffset(channel NetworkChannel, messageType NetworkMessageType, buffer []
 }
 
 func (g *GClass2486) method_1(t uint32) {
-	g.SendFinite(g.Get(NetworkChannelUnreliable, NetworkMessageTypePong, helpers.UInt32ToBytes(t)))
+	g.SendFinite(g.Get(models.NetworkChannelUnreliable, models.NetworkMessageTypePong, helpers.UInt32ToBytes(t)))
 }
 
 func (g *GClass2486) method_2() {
@@ -252,16 +192,16 @@ func (g *GClass2486) method_2() {
 	}
 }
 
-func (g *GClass2486) SendFinite(message *GClass2498) {
+func (g *GClass2486) SendFinite(message *models.GClass2498) {
 	switch message.Channel {
-	case NetworkChannelReliable:
+	case models.NetworkChannelReliable:
 		g.method_3(message)
-	case NetworkChannelUnreliable:
+	case models.NetworkChannelUnreliable:
 		g.SendUnreliable(message)
 	}
 }
 
-func (g *GClass2486) SendUnreliable(message *GClass2498) {
+func (g *GClass2486) SendUnreliable(message *models.GClass2498) {
 	num := 4
 	num2 := len(g.byte_1) - 4
 	count := len(message.Buffer)
@@ -280,7 +220,7 @@ func (g *GClass2486) SendUnreliable(message *GClass2498) {
 	g.gclass2500_0.unreliableSent.Increment(count)
 }
 
-func (g *GClass2486) method_3(message *GClass2498) {
+func (g *GClass2486) method_3(message *models.GClass2498) {
 	num := 1
 	num2 := len(g.byte_0) - 1
 	count := len(message.Buffer)
@@ -321,7 +261,7 @@ func (g *GClass2486) method_5(buffer []byte, count int) {
 
 func (g *GClass2486) HandleReceive(buffer []byte, count int) {
 	g.LastReceiveTime = g.CurrentTime()
-	channel := NetworkChannel(buffer[0])
+	channel := models.NetworkChannel(buffer[0])
 	num := binary.LittleEndian.Uint16(buffer[1:3])
 	if g.ushort_1 == num {
 		g.gclass2500_0.duplicated.Increment()
@@ -336,7 +276,7 @@ func (g *GClass2486) HandleReceive(buffer []byte, count int) {
 			}
 		}
 		g.gclass2500_0.lose.Increment(1, 0)
-		if channel == NetworkChannelReliable {
+		if channel == models.NetworkChannelReliable {
 			g.method_7(buffer, count)
 		} else {
 			g.method_6(buffer, count)
@@ -352,7 +292,7 @@ func (g *GClass2486) method_6(buffer []byte, bufferSize int) {
 		}
 	}()
 	count := bufferSize - 4
-	message := g.Get(NetworkChannel(buffer[0]), NetworkMessageType(buffer[3]), buffer[4:count+4])
+	message := g.Get(models.NetworkChannel(buffer[0]), models.NetworkMessageType(buffer[3]), buffer[4:count+4])
 	g.gclass2487_0.HandleReceive(message)
 	g.gclass2500_0.unreliableReceived.Increment(bufferSize)
 }
@@ -367,6 +307,8 @@ func (g *GClass2486) method_7(buffer []byte, bufferSize int) {
 	// fmt.Printf("bufferSize: %d, num: %d, data: %x\n", bufferSize, num, buffer[3:num+3])
 	if num2 := g.kcp_0.Input(buffer[3:num+3], true, true); num2 < 0 {
 		g.logger.Error().Msg(fmt.Sprintf("Input failed with error=%d for buffer with length=%d (address: %s)", num2, num, g.gclass2483_0))
+		g.logger.Error().Msg(fmt.Sprintf("Data: %x", buffer[:num+3]))
+
 	}
 	g.gclass2500_0.reliableSegmentalReceived.Increment(bufferSize)
 }
@@ -380,8 +322,8 @@ func (g *GClass2486) HandleReceiveReliableFinite() {
 	for {
 		if size := g.kcp_0.PeekSize(); size > 0 {
 			if n := g.kcp_0.Recv(g.byte_0[:size]); n > 0 {
-				messageType := NetworkMessageType(g.byte_0[0])
-				message := g.Get(NetworkChannelReliable, messageType, g.byte_0[1:n])
+				messageType := models.NetworkMessageType(g.byte_0[0])
+				message := g.Get(models.NetworkChannelReliable, messageType, g.byte_0[1:n])
 				g.gclass2487_0.HandleReceive(message)
 				g.gclass2500_0.reliableReceived.Increment(n)
 			}

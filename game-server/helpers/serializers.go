@@ -75,7 +75,15 @@ func WriteFloat32(buffer *bytes.Buffer, value float32) error {
 	return binary.Write(buffer, binary.LittleEndian, value)
 }
 
+func WriteUInt32(buffer *bytes.Buffer, value uint32) error {
+	return binary.Write(buffer, binary.LittleEndian, value)
+}
+
 func WriteUInt16(buffer *bytes.Buffer, value uint16) error {
+	return binary.Write(buffer, binary.LittleEndian, value)
+}
+
+func WriteInt64(buffer *bytes.Buffer, value int64) error {
 	return binary.Write(buffer, binary.LittleEndian, value)
 }
 
