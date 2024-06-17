@@ -67,11 +67,19 @@ func WriteBytesAndSize(buffer *bytes.Buffer, value []byte) error {
 	return err
 }
 
+func WriteInt16(buffer *bytes.Buffer, value int16) error {
+	return binary.Write(buffer, binary.LittleEndian, value)
+}
+
 func WriteInt32(buffer *bytes.Buffer, value int32) error {
 	return binary.Write(buffer, binary.LittleEndian, value)
 }
 
 func WriteFloat32(buffer *bytes.Buffer, value float32) error {
+	return binary.Write(buffer, binary.LittleEndian, value)
+}
+
+func WriteFloat64(buffer *bytes.Buffer, value float64) error {
 	return binary.Write(buffer, binary.LittleEndian, value)
 }
 

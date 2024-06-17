@@ -3,14 +3,15 @@ package core
 import (
 	"bytes"
 	"game-server/helpers"
+	"game-server/models/game/enums"
 )
 
 type VoipQualitySettings struct {
-	FrameSize              FrameSize
-	AudioQuality           AudioQuality
+	FrameSize              enums.FrameSize
+	AudioQuality           enums.AudioQuality
 	ForwardErrorCorrection bool
-	NoiseSuppression       NoiseSuppressionLevels
-	SensitivityLevels      VadSensitivityLevels
+	NoiseSuppression       enums.NoiseSuppressionLevels
+	SensitivityLevels      enums.VadSensitivityLevels
 }
 
 func DeserializeVoipQualitySettings(buffer *bytes.Buffer) (VoipQualitySettings, error) {
@@ -21,12 +22,12 @@ func DeserializeVoipQualitySettings(buffer *bytes.Buffer) (VoipQualitySettings, 
 	if err = helpers.ReadByte(buffer, &val); err != nil {
 		return vqs, err
 	} else {
-		vqs.FrameSize = FrameSize(val)
+		vqs.FrameSize = enums.FrameSize(val)
 	}
 	if err = helpers.ReadByte(buffer, &val); err != nil {
 		return vqs, err
 	} else {
-		vqs.AudioQuality = AudioQuality(val)
+		vqs.AudioQuality = enums.AudioQuality(val)
 	}
 	if err = helpers.ReadBool(buffer, &vqs.ForwardErrorCorrection); err != nil {
 		return vqs, err
@@ -34,12 +35,12 @@ func DeserializeVoipQualitySettings(buffer *bytes.Buffer) (VoipQualitySettings, 
 	if err = helpers.ReadByte(buffer, &val); err != nil {
 		return vqs, err
 	} else {
-		vqs.NoiseSuppression = NoiseSuppressionLevels(val)
+		vqs.NoiseSuppression = enums.NoiseSuppressionLevels(val)
 	}
 	if err = helpers.ReadByte(buffer, &val); err != nil {
 		return vqs, err
 	} else {
-		vqs.SensitivityLevels = VadSensitivityLevels(val)
+		vqs.SensitivityLevels = enums.VadSensitivityLevels(val)
 	}
 	return vqs, nil
 }

@@ -66,11 +66,19 @@ func ReadUInt32(buffer *bytes.Buffer, result *uint32) error {
 	return nil
 }
 
+func ReadInt16(buffer *bytes.Buffer, result *int16) error {
+	return binary.Read(buffer, binary.LittleEndian, result)
+}
+
 func ReadInt32(buffer *bytes.Buffer, result *int32) error {
 	return binary.Read(buffer, binary.LittleEndian, result)
 }
 
 func ReadInt64(buffer *bytes.Buffer, result *int64) error {
+	return binary.Read(buffer, binary.LittleEndian, result)
+}
+
+func ReadFloat64(buffer *bytes.Buffer, result *float64) error {
 	return binary.Read(buffer, binary.LittleEndian, result)
 }
 
