@@ -6,18 +6,18 @@ import (
 )
 
 type RpcSyncGameTime struct {
-	time int64
+	Time uint64
 }
 
 func (rsp *RpcSyncGameTime) Deserialize(buf *bytes.Buffer) error {
-	if err := helpers.ReadInt64(buf, &rsp.time); err != nil {
+	if err := helpers.ReadPackedUInt64(buf, &rsp.Time); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (rsp *RpcSyncGameTime) Serialize(buf *bytes.Buffer) error {
-	if err := helpers.WriteInt64(buf, rsp.time); err != nil {
+	if err := helpers.WritePackedUInt64(buf, rsp.Time); err != nil {
 		return err
 	}
 	return nil

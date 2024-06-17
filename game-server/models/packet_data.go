@@ -13,6 +13,7 @@ type DataPacket struct {
 	GamePacketType uint16
 	GamePacket     interface {
 		Serialize(buffer *bytes.Buffer) error
+		Deserialize(buffer *bytes.Buffer) error
 	}
 }
 
@@ -30,26 +31,30 @@ func (p *DataPacket) Parse(data []byte) error {
 		return fmt.Errorf("ERROR Length: %d, Buffer Length: %d", p.Length, buffer.Len())
 	}
 
+	var res interface {
+		Serialize(buffer *bytes.Buffer) error
+		Deserialize(buffer *bytes.Buffer) error
+	}
 	switch p.GamePacketType {
+	case 2:
+		// res = &response.PacketRpcResponse{}
+		return fmt.Errorf("PacketRpcResponse unexpected")
+	case 5:
+		res = &request.PacketCmdRequest{}
 	case 147:
-		res := &request.PacketConnection{}
-		err := res.Deserialize(buffer)
-		if err != nil {
-			return err
-		}
-		p.GamePacket = res
-		return nil
+		res = &request.PacketConnection{}
 	case 190:
-		res := &request.PacketProgressReport{}
-		err := res.Deserialize(buffer)
-		if err != nil {
-			return err
-		}
-		p.GamePacket = res
-		return nil
+		res = &request.PacketProgressReport{}
 	default:
 		return nil
 	}
+
+	err := res.Deserialize(buffer)
+	if err != nil {
+		return err
+	}
+	p.GamePacket = res
+	return nil
 }
 
 func (p *DataPacket) Write() []byte {

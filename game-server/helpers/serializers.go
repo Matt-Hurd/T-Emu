@@ -145,3 +145,98 @@ func FileToZlibCompressed(filename string) ([]byte, error) {
 
 	return compressedData, nil
 }
+
+func WritePackedUInt64(buf *bytes.Buffer, value uint64) error {
+	var data []byte
+
+	switch {
+	case value <= 240:
+		data = append(data, byte(value))
+	case value <= 2287:
+		data = append(data, byte((value-240)/256+241))
+		data = append(data, byte((value-240)%256))
+	case value <= 67823:
+		data = append(data, 249)
+		data = append(data, byte((value-2288)/256))
+		data = append(data, byte((value-2288)%256))
+	case value <= 16777215:
+		data = append(data, 250)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+	case value <= 4294967295:
+		data = append(data, 251)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+		data = append(data, byte((value>>24)&255))
+	case value <= 1099511627775:
+		data = append(data, 252)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+		data = append(data, byte((value>>24)&255))
+		data = append(data, byte((value>>32)&255))
+	case value <= 281474976710655:
+		data = append(data, 253)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+		data = append(data, byte((value>>24)&255))
+		data = append(data, byte((value>>32)&255))
+		data = append(data, byte((value>>40)&255))
+	case value <= 72057594037927935:
+		data = append(data, 254)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+		data = append(data, byte((value>>24)&255))
+		data = append(data, byte((value>>32)&255))
+		data = append(data, byte((value>>40)&255))
+		data = append(data, byte((value>>48)&255))
+	default:
+		data = append(data, 255)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+		data = append(data, byte((value>>24)&255))
+		data = append(data, byte((value>>32)&255))
+		data = append(data, byte((value>>40)&255))
+		data = append(data, byte((value>>48)&255))
+		data = append(data, byte((value>>56)&255))
+	}
+
+	_, err := buf.Write(data)
+	return err
+}
+
+func WritePackedUInt32(buf *bytes.Buffer, value uint32) error {
+	var data []byte
+
+	if value <= 240 {
+		data = append(data, byte(value))
+	} else if value <= 2287 {
+		data = append(data, byte((value-240)/256+241))
+		data = append(data, byte((value-240)%256))
+	} else if value <= 67823 {
+		data = append(data, 249)
+		data = append(data, byte((value-2288)/256))
+		data = append(data, byte((value-2288)%256))
+	} else if value <= 16777215 {
+		data = append(data, 250)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+	} else if value <= 4294967295 {
+		data = append(data, 251)
+		data = append(data, byte(value&255))
+		data = append(data, byte((value>>8)&255))
+		data = append(data, byte((value>>16)&255))
+		data = append(data, byte((value>>24)&255))
+	} else {
+		return errors.New("value out of range")
+	}
+
+	_, err := buf.Write(data)
+	return err
+}

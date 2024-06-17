@@ -226,7 +226,6 @@ func (rp *PacketConnection) DebugPrintAll() {
 }
 
 func (rp *PacketConnection) GetDefault() {
-
 	resourceArray, err := helpers.FileToZlibCompressed(filepath.Join("static/", "customs_connection_response_resource_key.json"))
 	if err != nil {
 		log.Printf("Error compressing zlib: %v\n", err)

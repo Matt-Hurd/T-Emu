@@ -5,6 +5,7 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"time"
 )
@@ -129,4 +130,123 @@ func DecompressZlib(compressed []byte) ([]byte, error) {
 	}
 
 	return decompressed.Bytes(), nil
+}
+
+func ReadPackedUInt64(buf *bytes.Buffer, ret *uint64) error {
+	b, err := buf.ReadByte()
+	if err != nil {
+		return err
+	}
+
+	var result uint64
+	var bytesToRead int
+
+	switch {
+	case b < 241:
+		*ret = uint64(b)
+		return nil
+	case b >= 241 && b <= 248:
+		bytesToRead = 1
+		result = 240 + 256*(uint64(b)-241)
+	case b == 249:
+		bytesToRead = 2
+		result = 2288
+	case b == 250:
+		bytesToRead = 3
+	case b == 251:
+		bytesToRead = 4
+	case b == 252:
+		bytesToRead = 5
+	case b == 253:
+		bytesToRead = 6
+	case b == 254:
+		bytesToRead = 7
+	case b == 255:
+		bytesToRead = 8
+	default:
+		return errors.New("invalid first byte")
+	}
+
+	for i := 0; i < bytesToRead; i++ {
+		nextByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		result += uint64(nextByte) << (8 * uint(i))
+	}
+
+	*ret = result
+	return nil
+}
+
+func ReadPackedUInt32(buf *bytes.Buffer, out *uint32) error {
+	firstByte, err := buf.ReadByte()
+	if err != nil {
+		*out = 0
+		return err
+	}
+
+	if firstByte <= 240 {
+		*out = uint32(firstByte)
+		return nil
+	}
+	if firstByte <= 248 {
+		secondByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		*out = 240 + uint32(firstByte-241)*256 + uint32(secondByte)
+		return nil
+	}
+	if firstByte == 249 {
+		secondByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		thirdByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		*out = 2288 + uint32(secondByte)*256 + uint32(thirdByte)
+		return nil
+	}
+	if firstByte == 250 {
+		secondByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		thirdByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		fourthByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		*out = uint32(secondByte) + (uint32(thirdByte) << 8) + (uint32(fourthByte) << 16)
+		return nil
+	}
+	if firstByte == 251 {
+		secondByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		thirdByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		fourthByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+		fifthByte, err := buf.ReadByte()
+		if err != nil {
+			return err
+		}
+
+		*out = uint32(secondByte) + (uint32(thirdByte) << 8) + (uint32(fourthByte) << 16) + (uint32(fifthByte) << 24)
+		return nil
+	}
+
+	return fmt.Errorf("invalid first byte: %d", firstByte)
 }

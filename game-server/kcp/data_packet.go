@@ -6,6 +6,7 @@ import (
 	"game-server/models"
 	"game-server/models/game/request"
 	"game-server/models/game/response"
+	"game-server/models/rpc"
 )
 
 func HandleDataPacket(packet *models.GClass2498, kcp_0 *GClass2486) {
@@ -16,6 +17,8 @@ func HandleDataPacket(packet *models.GClass2498, kcp_0 *GClass2486) {
 		return
 	}
 	switch dataPacket.GamePacketType {
+	case 5:
+		HandlePacketCmdRequest(dataPacket.GamePacket.(*request.PacketCmdRequest), kcp_0)
 	case 147:
 		HandlePacketConnection(dataPacket.GamePacket.(*request.PacketConnection), kcp_0)
 	case 190:
@@ -23,6 +26,10 @@ func HandleDataPacket(packet *models.GClass2498, kcp_0 *GClass2486) {
 	default:
 		HandleUnknownPacket(dataPacket, packet)
 	}
+}
+
+func HandlePacketCmdRequest(packet *request.PacketCmdRequest, g *GClass2486) {
+	fmt.Printf("Received PacketCmdRequest: %v\n", packet)
 }
 
 func HandlePacketProgressReport(packet *request.PacketProgressReport) {
@@ -58,6 +65,24 @@ func HandlePacketConnection(packet *request.PacketConnection, g *GClass2486) {
 	nightmare.CustomizationData, err = helpers.CompressZlib([]byte(`["66043cc27502eca33a08cad0","5e9dc97c86f774054c19ac9a"]`))
 	if err != nil {
 		fmt.Println("Error compressing customization data:", err)
+	}
+	g.SendQueue <- &models.GClass2498{
+		Channel: models.NetworkChannelReliable,
+		Type:    models.NetworkMessageTypeData,
+		Buffer:  resp.Write(),
+	}
+
+	rpcCmd := &response.PacketRpcResponse{
+		CmdId: 547040626,
+		NetId: 1,
+		Command: &rpc.RpcSyncGameTime{
+			Time: 5250227001791798016,
+		},
+	}
+
+	resp = &models.DataPacket{
+		GamePacketType: 2,
+		GamePacket:     rpcCmd,
 	}
 	g.SendQueue <- &models.GClass2498{
 		Channel: models.NetworkChannelReliable,
@@ -113,19 +138,14 @@ func GetPacketType(packet *models.DataPacket) string {
 		147:   "ConnectionRequest",
 		148:   "RejectResponse",
 		168:   "BEPacket",
-		185:   "PartialCommand",
-		188:   "NightMare",
-		189:   "SyncToPlayers",
 		151:   "WorldSpawn",
 		152:   "WorldUnspawn",
-		191:   "SubWorldSpawnLoot",
-		192:   "SubWorldSpawnSearchLoot",
 		154:   "SubWorldUnspawn",
+		155:   "PlayerSpawn",
 		156:   "PlayerUnspawn",
+		157:   "ObserverSpawn",
 		158:   "ObserverUnspawn",
 		160:   "DeathInventorySync",
-		155:   "PlayerSpawn",
-		157:   "ObserverSpawn",
 		170:   "messageFromServer",
 		171:   "SpawnObservedPlayer",
 		172:   "SpawnObservedPlayers",
@@ -133,8 +153,13 @@ func GetPacketType(packet *models.DataPacket) string {
 		173:   "SnapshotObservedPlayers",
 		174:   "CommandsObservedPlayers",
 		184:   "SnapshotBTRVehicles",
-		18385: "HLAPI",
+		185:   "PartialCommand",
+		188:   "NightMare",
+		189:   "SyncToPlayers",
 		190:   "ProgressReport",
+		191:   "SubWorldSpawnLoot",
+		192:   "SubWorldSpawnSearchLoot",
+		18385: "HLAPI",
 	}
 	if msgType, ok := msgTypeEnum[int(packet.GamePacketType)]; ok {
 		return msgType + fmt.Sprintf("(%d)", packet.GamePacketType)
