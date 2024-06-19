@@ -54,21 +54,21 @@ func (srv *Server) PacketHandlerLoop() {
 			continue
 		}
 
-		go srv.handlePacket(buffer[:n], remoteAddr)
+		go srv.handlePacket(buffer[:n], n, remoteAddr)
 	}
 }
 
-func (srv *Server) handlePacket(data []byte, addr *net.UDPAddr) {
-	// if len(data) == 0 {
-	// 	return
-	// }
+func (srv *Server) handlePacket(data []byte, n int, addr *net.UDPAddr) {
+	if len(data) == 0 {
+		return
+	}
 
 	// fmt.Printf("Received packet from %s: %x\n", addr, data)
-
+	// fmt.Printf("Received packet from %s: %x\n", addr.String(), data[:n])
 	if _, exists := srv.clients[addr.String()]; !exists {
 		srv.clients[addr.String()] = kcp.NewGClass2486(srv.conn, addr, kcp.NewGClass2485())
 	}
-	srv.clients[addr.String()].HandleReceive(data, len(data))
+	srv.clients[addr.String()].HandleReceive(data, n)
 	srv.clients[addr.String()].HandleReceiveReliableFinite()
 
 	// switch data[0] {

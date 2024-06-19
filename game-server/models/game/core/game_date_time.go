@@ -25,8 +25,6 @@ func DeserializeGameDateTime(buffer *bytes.Buffer) (GameDateTime, error) {
 			return gdt, err
 		}
 	}
-	// buf := buffer.Next(8)
-	// fmt.Printf("GameDateTime: %x\n", buf)
 	if err = helpers.ReadDateTime(buffer, &gdt.GameDateTime); err != nil {
 		return gdt, err
 	}

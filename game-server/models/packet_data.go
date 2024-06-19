@@ -27,8 +27,9 @@ func (p *DataPacket) Parse(data []byte) error {
 	helpers.ReadUInt16(buffer, &p.GamePacketType)
 
 	if int(p.Length) != buffer.Len() {
-		fmt.Printf("ERROR Length: %d, Buffer Length: %d\n", p.Length, buffer.Len())
-		return fmt.Errorf("ERROR Length: %d, Buffer Length: %d", p.Length, buffer.Len())
+		fmt.Printf("IGNORING ERROR Length: %d, Buffer Length: %d\n", p.Length, buffer.Len())
+		// fmt.Printf("ERRORING data: %x\n", data)
+		// return fmt.Errorf("ERROR Length: %d, Buffer Length: %d", p.Length, buffer.Len())
 	}
 
 	var res interface {
@@ -41,13 +42,19 @@ func (p *DataPacket) Parse(data []byte) error {
 		return fmt.Errorf("PacketRpcResponse unexpected")
 	case 5:
 		res = &request.PacketCmdRequest{}
+	case 35:
+		res = &request.PacketClientReady{}
 	case 147:
 		res = &request.PacketConnection{}
 	case 190:
 		res = &request.PacketProgressReport{}
+	case 18385:
+		res = &request.PacketHLAPIRequest{}
 	default:
 		return nil
 	}
+
+	fmt.Printf("Received data packet type: %d. %v\n", p.GamePacketType, res)
 
 	err := res.Deserialize(buffer)
 	if err != nil {
@@ -64,6 +71,8 @@ func (p *DataPacket) Write() []byte {
 		fmt.Println("Error serializing connection response:", err)
 	}
 	p.Length = uint16(buffer.Len())
+
+	fmt.Printf("Writing data packet type: %d\n", p.GamePacketType)
 
 	data := make([]byte, 4)
 	binary.LittleEndian.PutUint16(data[:2], uint16(buffer.Len()))

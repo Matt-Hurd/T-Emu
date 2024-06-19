@@ -59,5 +59,8 @@ func (nm *NightMare) DebugPrintAll() {
 }
 
 func Decompress(data []byte) ([]byte, error) {
+	if len(data) == 0 {
+		return nil, nil
+	}
 	return helpers.DecompressZlib(data)
 }

@@ -99,6 +99,13 @@ func WriteByte(buffer *bytes.Buffer, value byte) error {
 	return buffer.WriteByte(value)
 }
 
+func TimeToInt64(dateTime time.Time) int64 {
+	const unixEpochTicks = 621355968000000000
+	const nanosecondsToTicks = 100
+	ticks := unixEpochTicks + (dateTime.UnixNano() / nanosecondsToTicks)
+	return ticks
+}
+
 func WriteDateTime(buffer *bytes.Buffer, dateTime time.Time) error {
 
 	const OLEAutomationEpoch = "1899-12-30T00:00:00Z"

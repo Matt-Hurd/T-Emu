@@ -32,6 +32,8 @@ type GClass2486 struct {
 	ushort_1        uint16
 	SendQueue       chan *models.GClass2498
 	ReceiveQueue    chan *models.GClass2498
+	ProfileId       string
+	Token           string
 	mu              sync.Mutex
 }
 
@@ -65,6 +67,8 @@ func (g *GClass2486) processReceiveQueue() {
 	for msg := range g.ReceiveQueue {
 		if msg.Type == models.NetworkMessageTypeData {
 			HandleDataPacket(msg, g)
+		} else {
+			fmt.Printf("Unexpected message in receieve queue: %v\n", msg)
 		}
 	}
 }

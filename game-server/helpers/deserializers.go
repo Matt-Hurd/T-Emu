@@ -100,19 +100,24 @@ func ReadByte(buffer *bytes.Buffer, result *byte) error {
 	return nil
 }
 
+func Int64ToTime(int64Time int64) time.Time {
+	const ticksToNanoseconds = 100
+	const unixEpochTicks = 621355968000000000
+	ticks := int64Time & 0x3FFFFFFFFFFFFFFF
+
+	nanoseconds := (ticks - unixEpochTicks) * ticksToNanoseconds
+	gameDateTime := time.Unix(0, nanoseconds).UTC()
+	return gameDateTime
+}
+
 func ReadDateTime(buffer *bytes.Buffer, result *time.Time) error {
 	var binaryDate int64
 	err := binary.Read(buffer, binary.LittleEndian, &binaryDate)
 	if err != nil {
 		return err
 	}
-	const ticksToNanoseconds = 100
-	const unixEpochTicks = 621355968000000000
-	ticks := binaryDate & 0x3FFFFFFFFFFFFFFF
 
-	nanoseconds := (ticks - unixEpochTicks) * ticksToNanoseconds
-	gameDateTime := time.Unix(0, nanoseconds).UTC()
-	*result = gameDateTime
+	*result = Int64ToTime(binaryDate)
 	return nil
 }
 

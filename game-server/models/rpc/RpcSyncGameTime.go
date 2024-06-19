@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"bytes"
+	"fmt"
 	"game-server/helpers"
 )
 
@@ -13,6 +14,7 @@ func (rsp *RpcSyncGameTime) Deserialize(buf *bytes.Buffer) error {
 	if err := helpers.ReadPackedUInt64(buf, &rsp.Time); err != nil {
 		return err
 	}
+	fmt.Printf("Time: %v\n", helpers.Int64ToTime(int64(rsp.Time)))
 	return nil
 }
 

@@ -10,6 +10,6 @@ import (
 func GetCheckVersion(c *gin.Context) {
 	helpers.JSONResponse(c, http.StatusOK, "", map[string]interface{}{
 		"isvalid":       true,
-		"latestversion": "1.14.8.5.30150",
+		"latestversion": "0.14.9.1.30626",
 	})
 }

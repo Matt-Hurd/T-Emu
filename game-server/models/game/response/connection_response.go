@@ -7,6 +7,8 @@ import (
 	"log"
 	"path/filepath"
 	"time"
+
+	"github.com/g3n/engine/math32"
 )
 
 type PacketConnection struct {
@@ -93,10 +95,10 @@ func (rp *PacketConnection) Deserialize(buffer *bytes.Buffer) error {
 	if err = helpers.ReadBytesAndSize(buffer, &rp.SessionId); err != nil {
 		return err
 	}
-	if rp.Bounds.Min, err = core.DeserializeVector3(buffer); err != nil {
+	if err = rp.Bounds.Min.Deserialize(buffer); err != nil {
 		return err
 	}
-	if rp.Bounds.Max, err = core.DeserializeVector3(buffer); err != nil {
+	if err = rp.Bounds.Max.Deserialize(buffer); err != nil {
 		return err
 	}
 	if err = helpers.ReadUInt16(buffer, &rp.SCPort); err != nil {
@@ -267,14 +269,18 @@ func (rp *PacketConnection) GetDefault() {
 	rp.SessionId = make([]byte, 256)
 	rp.Bounds = core.Bounds{
 		Min: core.Vector3{
-			X: -448,
-			Y: -250,
-			Z: -280,
+			Vector3: math32.Vector3{
+				X: -448,
+				Y: -250,
+				Z: -280,
+			},
 		},
 		Max: core.Vector3{
-			X: 752,
-			Y: 250,
-			Z: 260,
+			Vector3: math32.Vector3{
+				X: 752,
+				Y: 250,
+				Z: 260,
+			},
 		},
 	}
 	rp.SCPort = 0

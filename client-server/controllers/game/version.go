@@ -27,7 +27,7 @@ func VersionValidate(c *gin.Context) {
 		return
 	}
 
-	if req.Version.Major != "0.14.9.0.30473" || req.Version.Minor != "live" || req.Version.Game != "live" || req.Version.Backend != "6" || req.Version.Taxonomy != "341" {
+	if req.Version.Major != "0.14.9.1.30626" || req.Version.Minor != "live" || req.Version.Game != "live" || req.Version.Backend != "6" || req.Version.Taxonomy != "341" {
 		helpers.JSONResponse(c, http.StatusBadRequest, "Invalid game version", nil)
 		return
 	}

@@ -3,26 +3,27 @@ package core
 import (
 	"bytes"
 	"game-server/helpers"
+
+	"github.com/g3n/engine/math32"
 )
 
 type Vector3 struct {
-	X, Y, Z float32
+	math32.Vector3
 }
 
-func DeserializeVector3(buffer *bytes.Buffer) (Vector3, error) {
-	var v Vector3
+func (v *Vector3) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 
 	if err = helpers.ReadFloat32(buffer, &v.X); err != nil {
-		return v, err
+		return err
 	}
 	if err = helpers.ReadFloat32(buffer, &v.Y); err != nil {
-		return v, err
+		return err
 	}
 	if err = helpers.ReadFloat32(buffer, &v.Z); err != nil {
-		return v, err
+		return err
 	}
-	return v, nil
+	return nil
 }
 
 func (v *Vector3) Serialize(buffer *bytes.Buffer) error {
@@ -38,4 +39,8 @@ func (v *Vector3) Serialize(buffer *bytes.Buffer) error {
 		return err
 	}
 	return nil
+}
+
+func (v *Vector3) ToQuaternion() *Quaternion {
+	return &Quaternion{math32.Quaternion{X: v.X, Y: v.Y, Z: v.Z, W: 0}}
 }

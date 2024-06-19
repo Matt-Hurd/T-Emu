@@ -92,6 +92,7 @@ func (cs *ConnectionState) HandleReceive(msg *models.GClass2498) {
 			cs.Enter(Disconnected)
 			// msg.Dispose()
 		default:
+			log.Info().Msg(fmt.Sprintf("Unknown message type (msg: %v)", msg))
 			// msg.Dispose()
 		}
 	case Waiting:
