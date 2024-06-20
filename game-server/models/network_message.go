@@ -19,7 +19,7 @@ const (
 	NetworkMessageTypeDisconnect
 )
 
-type GClass2498 struct {
+type NetworkMessage struct {
 	Channel NetworkChannel
 	Type    NetworkMessageType
 	Buffer  []byte

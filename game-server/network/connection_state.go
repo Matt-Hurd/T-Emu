@@ -1,4 +1,4 @@
-package kcp
+package network
 
 import (
 	"fmt"
@@ -25,12 +25,12 @@ const (
 )
 
 type ConnectionState struct {
-	Connection *GClass2486
+	Connection *NetworkManager
 	State      State
 	StartTime  float64
 }
 
-func NewConnectionState(conn *GClass2486) *ConnectionState {
+func NewConnectionState(conn *NetworkManager) *ConnectionState {
 	return &ConnectionState{Connection: conn}
 }
 
@@ -54,7 +54,7 @@ func (cs *ConnectionState) Exit() {
 	log.Info().Msg(fmt.Sprintf("Exit state (address: %s)", cs.Connection.Address()))
 }
 
-func (cs *ConnectionState) HandleReceive(msg *models.GClass2498) {
+func (cs *ConnectionState) HandleReceive(msg *models.NetworkMessage) {
 	switch cs.State {
 	case Initial:
 		if msg.Type == models.NetworkMessageTypeConnect {
@@ -127,7 +127,7 @@ func (cs *ConnectionState) Disconnect() {
 	cs.Enter(Disconnected)
 }
 
-func (cs *ConnectionState) Send(msg *models.GClass2498) {
+func (cs *ConnectionState) Send(msg *models.NetworkMessage) {
 	cs.Connection.SendQueue <- msg
 }
 
