@@ -5,16 +5,17 @@ import (
 	"net"
 	"time"
 
+	"game-server/models/player"
 	"game-server/network"
 )
 
 type Server struct {
-	clients map[string]*network.NetworkManager
+	clients map[string]*player.PlayerSession
 	conn    *net.UDPConn
 }
 
 func NewServer() *Server {
-	return &Server{clients: make(map[string]*network.NetworkManager)}
+	return &Server{clients: make(map[string]*player.PlayerSession)}
 }
 
 func (srv *Server) Start() error {
@@ -35,7 +36,7 @@ func (srv *Server) Start() error {
 	for {
 		time.Sleep(10 * time.Millisecond)
 		for _, conn := range srv.clients {
-			conn.EarlyUpdate()
+			conn.Connection.EarlyUpdate()
 		}
 	}
 }
@@ -59,9 +60,10 @@ func (srv *Server) handlePacket(data []byte, n int, addr *net.UDPAddr) {
 	}
 
 	if _, exists := srv.clients[addr.String()]; !exists {
-		srv.clients[addr.String()] = network.NewNetworkManager(srv.conn, addr, network.DefaultNetworkConfig())
+		srv.clients[addr.String()] = &player.PlayerSession{
+			Connection: network.NewNetworkManager(srv.conn, addr, network.DefaultNetworkConfig()),
+		}
 	}
-	srv.clients[addr.String()].HandleReceive(data, n)
-	srv.clients[addr.String()].HandleReceiveReliableFinite()
+	srv.clients[addr.String()].Connection.HandleReceive(data, n)
 
 }

@@ -25,17 +25,15 @@ type NetworkManager struct {
 	Config           *NetworkConfig
 	stopwatch_0      time.Time
 	metrics          *metrics.NetworkMetrics
-	lastReceiveTime  uint32
+	LastReceiveTime  uint32
 	lastPingResponse uint32
-	uint_1           uint32
+	lastUpdateTime   uint32
 	byte_0           []byte
 	byte_1           []byte
-	ushort_0         uint16
-	ushort_1         uint16
+	msgCount         uint16
+	lastMsgId        uint16
 	SendQueue        chan *models.NetworkMessage
 	ReceiveQueue     chan *models.NetworkMessage
-	ProfileId        string
-	Token            string
 	mu               sync.Mutex
 }
 
@@ -49,13 +47,13 @@ func NewNetworkManager(socket *net.UDPConn, socketAddress *net.UDPAddr, configur
 		metrics:      metrics.NewNetworkMetrics(),
 		byte_0:       make([]byte, 149224),
 		byte_1:       make([]byte, 1200),
-		ushort_1:     65535,
+		lastMsgId:    65535,
 		SendQueue:    make(chan *models.NetworkMessage, 100),
 		ReceiveQueue: make(chan *models.NetworkMessage, 16),
 	}
 	g.state = NewConnectionState(g)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	g.kcp_0 = kcp.NewKCP(0, g.method_4)
+	g.kcp_0 = kcp.NewKCP(0, g.outputCallback)
 	g.kcp_0.NoDelay(1, 30, 3, 1)
 	g.kcp_0.WndSize(256, 256)
 	g.kcp_0.SetMtu(1197)
@@ -113,13 +111,13 @@ func (g *NetworkManager) Disconnect() {
 
 func (g *NetworkManager) EarlyUpdate() {
 	g.HandleReceiveReliableFinite()
-	g.method_2()
+	g.updateQueueMetrics()
 	g.state.Update()
 	g.kcp_0.Update()
 }
 
 func (g *NetworkManager) HandlePingReceiving(buffer []byte, count int) {
-	g.method_1(binary.LittleEndian.Uint32(buffer[:4]))
+	g.replyWithPong(binary.LittleEndian.Uint32(buffer[:4]))
 }
 
 func (g *NetworkManager) HandlePongReceiving(buffer []byte, count int) {
@@ -185,31 +183,30 @@ func (g *NetworkManager) Get(channel models.NetworkChannel, messageType models.N
 func GetOffset(channel models.NetworkChannel, messageType models.NetworkMessageType, buffer []byte, offset int, count int) *models.NetworkMessage {
 	array := make([]byte, count)
 	copy(array, buffer[offset:offset+count])
-	networkManager := &models.NetworkMessage{
+	message := &models.NetworkMessage{
 		Channel: channel,
 		Type:    messageType,
 		Buffer:  array[:count],
 	}
-	return networkManager
+	return message
 }
 
-func (g *NetworkManager) method_1(t uint32) {
+func (g *NetworkManager) replyWithPong(t uint32) {
 	g.SendFinite(g.Get(models.NetworkChannelUnreliable, models.NetworkMessageTypePong, helpers.UInt32ToBytes(t)))
 }
 
-func (g *NetworkManager) method_2() {
-	if g.CurrentTime()-g.uint_1 > 1000 {
-		// g.metrics.receivedQueue.Set(float32(g.kcp_0.WaitRcv()))
+func (g *NetworkManager) updateQueueMetrics() {
+	if g.CurrentTime()-g.lastUpdateTime > 1000 {
 		g.metrics.SentQueue.Set(float32(g.kcp_0.WaitSnd()))
 		g.metrics.Commit()
-		g.uint_1 = g.CurrentTime()
+		g.lastUpdateTime = g.CurrentTime()
 	}
 }
 
 func (g *NetworkManager) SendFinite(message *models.NetworkMessage) {
 	switch message.Channel {
 	case models.NetworkChannelReliable:
-		g.method_3(message)
+		g.SendReliable(message)
 	case models.NetworkChannelUnreliable:
 		g.SendUnreliable(message)
 	}
@@ -223,18 +220,18 @@ func (g *NetworkManager) SendUnreliable(message *models.NetworkMessage) {
 		g.logger.Error().Msg(fmt.Sprintf("Unreliable message size to send exceeded [%d/%d] (address: %s)", count, num2, g.addr))
 		return
 	}
-	g.ushort_0++
+	g.msgCount++
 	b := g.byte_1[:num]
 	b[0] = byte(message.Channel)
-	b[1] = byte(g.ushort_0)
-	b[2] = byte(g.ushort_0 >> 8)
+	b[1] = byte(g.msgCount)
+	b[2] = byte(g.msgCount >> 8)
 	b[3] = byte(message.Type)
 	copy(g.byte_1[num:], message.Buffer)
-	g.method_5(g.byte_1[:count+num], count+num)
+	g.writeToUDP(g.byte_1[:count+num], count+num)
 	g.metrics.UnreliableSent.Increment(count)
 }
 
-func (g *NetworkManager) method_3(message *models.NetworkMessage) {
+func (g *NetworkManager) SendReliable(message *models.NetworkMessage) {
 	num := 1
 	num2 := len(g.byte_0) - 1
 	count := len(message.Buffer)
@@ -249,19 +246,19 @@ func (g *NetworkManager) method_3(message *models.NetworkMessage) {
 	g.metrics.ReliableSent.Increment(count)
 }
 
-func (g *NetworkManager) method_4(buffer []byte, count int) {
+func (g *NetworkManager) outputCallback(buffer []byte, count int) {
 	num := 3
 	b := g.byte_1[:num+count]
-	g.ushort_0++
+	g.msgCount++
 	b[0] = 1
-	b[1] = byte(g.ushort_0)
-	b[2] = byte(g.ushort_0 >> 8)
+	b[1] = byte(g.msgCount)
+	b[2] = byte(g.msgCount >> 8)
 	copy(b[3:], buffer)
-	g.method_5(b[:count+num], count+num)
+	g.writeToUDP(b[:count+num], count+num)
 	g.metrics.ReliableSegmentalSent.Increment(count)
 }
 
-func (g *NetworkManager) method_5(buffer []byte, count int) {
+func (g *NetworkManager) writeToUDP(buffer []byte, count int) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	g.logger.Debug().Msg(fmt.Sprintf("Writing to UDP (address: %s), data length: %d, data: %x", g.addr, count, buffer))
@@ -274,32 +271,32 @@ func (g *NetworkManager) method_5(buffer []byte, count int) {
 }
 
 func (g *NetworkManager) HandleReceive(buffer []byte, count int) {
-	g.lastReceiveTime = g.CurrentTime()
+	g.LastReceiveTime = g.CurrentTime()
 	channel := models.NetworkChannel(buffer[0])
 	num := binary.LittleEndian.Uint16(buffer[1:3])
-	if g.ushort_1 == num {
+	if g.lastMsgId == num {
 		g.metrics.Duplicated.Increment()
 	} else {
-		if g.ushort_1 < num {
-			g.ushort_1 = num
+		if g.lastMsgId < num {
+			g.lastMsgId = num
 		} else {
-			if num < g.ushort_1-32767 {
-				g.ushort_1 = num
+			if num < g.lastMsgId-32767 {
+				g.lastMsgId = num
 			} else {
 				g.metrics.Disordered.Increment()
 			}
 		}
 		g.metrics.Lose.Increment(1, 0)
 		if channel == models.NetworkChannelReliable {
-			g.method_7(buffer, count)
+			g.ReceiveReliable(buffer, count)
 		} else {
-			g.method_6(buffer, count)
+			g.ReceiveUnreliable(buffer, count)
 		}
 		g.metrics.Received.Increment(count)
 	}
 }
 
-func (g *NetworkManager) method_6(buffer []byte, bufferSize int) {
+func (g *NetworkManager) ReceiveUnreliable(buffer []byte, bufferSize int) {
 	defer func() {
 		if r := recover(); r != nil {
 			g.logger.Error().Msg(fmt.Sprintf("Error receiving an unreliable message(address: %s): %v", g.addr, r))
@@ -311,14 +308,13 @@ func (g *NetworkManager) method_6(buffer []byte, bufferSize int) {
 	g.metrics.UnreliableReceived.Increment(bufferSize)
 }
 
-func (g *NetworkManager) method_7(buffer []byte, bufferSize int) {
+func (g *NetworkManager) ReceiveReliable(buffer []byte, bufferSize int) {
 	defer func() {
 		if r := recover(); r != nil {
 			g.logger.Error().Msg(fmt.Sprintf("Error receiving an reliable message(address: %s): %v", g.addr, r))
 		}
 	}()
 	num := bufferSize - 3
-	// fmt.Printf("bufferSize: %d, num: %d, data: %x\n", bufferSize, num, buffer[3:num+3])
 	if num2 := g.kcp_0.Input(buffer[3:num+3], true, true); num2 < 0 {
 		g.logger.Error().Msg(fmt.Sprintf("Input failed with error=%d for buffer with length=%d (address: %s)", num2, num, g.addr))
 		g.logger.Error().Msg(fmt.Sprintf("Data: %x", buffer[:num+3]))
@@ -328,11 +324,11 @@ func (g *NetworkManager) method_7(buffer []byte, bufferSize int) {
 }
 
 func (g *NetworkManager) HandleReceiveReliableFinite() {
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		g.logger.Error().Msg(fmt.Sprintf("Error finite receiving an reliable message(address: %s): %v", g.addr, r))
-	// 	}
-	// }()
+	defer func() {
+		if r := recover(); r != nil {
+			g.logger.Error().Msg(fmt.Sprintf("Error finite receiving an reliable message(address: %s): %v", g.addr, r))
+		}
+	}()
 	for {
 		if size := g.kcp_0.PeekSize(); size > 0 {
 			if n := g.kcp_0.Recv(g.byte_0[:size]); n > 0 {

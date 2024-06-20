@@ -13,7 +13,6 @@ type NetworkMetrics struct {
 	ReliableSegmentalSent     *MessageMetrics
 	UnreliableReceived        *MessageMetrics
 	UnreliableSent            *MessageMetrics
-	ReceivedQueue             *BasicMetrics
 	SentQueue                 *BasicMetrics
 }
 
@@ -31,7 +30,6 @@ func NewNetworkMetrics() *NetworkMetrics {
 		ReliableSegmentalSent:     NewMessageMetrics(),
 		UnreliableReceived:        NewMessageMetrics(),
 		UnreliableSent:            NewMessageMetrics(),
-		ReceivedQueue:             NewBasicMetrics(),
 		SentQueue:                 NewBasicMetrics(),
 	}
 }

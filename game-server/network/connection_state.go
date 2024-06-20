@@ -27,7 +27,7 @@ const (
 type ConnectionState struct {
 	Connection *NetworkManager
 	State      State
-	StartTime  float64
+	StartTime  uint32
 }
 
 func NewConnectionState(conn *NetworkManager) *ConnectionState {
@@ -41,10 +41,10 @@ func (cs *ConnectionState) Enter(state State) {
 		log.Info().Msg(fmt.Sprintf("Enter to the 'Initial' state (address: %s)", cs.Connection.Address()))
 	case Connecting:
 		log.Info().Msg(fmt.Sprintf("Enter to the 'Connecting' state (address: %s)", cs.Connection.Address()))
-		// cs.StartTime = cs.Connection.CurrentTime
+		cs.StartTime = cs.Connection.CurrentTime()
 	case Connected:
 		log.Info().Msg(fmt.Sprintf("Enter to the 'Connected' state (address: %s)", cs.Connection.Address()))
-		// cs.Connection.LastReceiveTime = cs.Connection.CurrentTime
+		cs.Connection.LastReceiveTime = cs.Connection.CurrentTime()
 	case Waiting:
 		log.Info().Msg(fmt.Sprintf("Enter to the 'Waiting' state (address: %s)", cs.Connection.Address()))
 	}
@@ -60,7 +60,6 @@ func (cs *ConnectionState) HandleReceive(msg *models.NetworkMessage) {
 		if msg.Type == models.NetworkMessageTypeConnect {
 			cs.Enter(Connecting)
 			cs.Connection.SendConnect(true, true)
-			// msg.Dispose()
 		}
 	case Connecting:
 		if msg.Type == models.NetworkMessageTypeConnect {
@@ -69,31 +68,23 @@ func (cs *ConnectionState) HandleReceive(msg *models.NetworkMessage) {
 				cs.Connection.SendConnect(false, true)
 			}
 			cs.Connection.ReturnConnect()
-			// msg.Dispose()
 		} else if msg.Type == models.NetworkMessageTypeData {
 			cs.Connection.ReceiveQueue <- msg
 		}
-		// else {
-		// msg.Dispose()
-		// }
 	case Connected:
 		switch msg.Type {
 		case models.NetworkMessageTypePing:
 			cs.Connection.HandlePingReceiving(msg.Buffer, len(msg.Buffer))
-			// msg.Dispose()
 		case models.NetworkMessageTypePong:
 			cs.Connection.HandlePongReceiving(msg.Buffer, len(msg.Buffer))
-			// msg.Dispose()
 		case models.NetworkMessageTypeData:
 			cs.Connection.ReceiveQueue <- msg
 		case models.NetworkMessageTypeDisconnect:
 			log.Info().Msg(fmt.Sprintf("Receive disconnect (address: %s)", cs.Connection.Address()))
 			cs.Connection.ReturnDisconnect()
 			cs.Enter(Disconnected)
-			// msg.Dispose()
 		default:
 			log.Info().Msg(fmt.Sprintf("Unknown message type (msg: %v)", msg))
-			// msg.Dispose()
 		}
 	case Waiting:
 		if msg.Type == models.NetworkMessageTypeConnect {

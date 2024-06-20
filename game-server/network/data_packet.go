@@ -15,7 +15,7 @@ import (
 	"github.com/g3n/engine/math32"
 )
 
-func HandleDataPacket(packet *models.NetworkMessage, kcp_0 *NetworkManager) {
+func HandleDataPacket(packet *models.NetworkMessage, networkManager *NetworkManager) {
 	dataPacket := &models.DataPacket{}
 	buf := bytes.NewBuffer(packet.Buffer)
 	for buf.Len() > 0 {
@@ -25,16 +25,16 @@ func HandleDataPacket(packet *models.NetworkMessage, kcp_0 *NetworkManager) {
 			return
 		}
 		switch dataPacket.GamePacketType {
-		case 5:
-			HandlePacketCmdRequest(dataPacket.GamePacket.(*request.PacketCmdRequest), kcp_0)
-		case 35:
-			HandlePacketPlayerReady(dataPacket.GamePacket.(*request.PacketClientReady), kcp_0)
-		case 147:
-			HandlePacketConnection(dataPacket.GamePacket.(*request.PacketConnection), kcp_0)
-		case 190:
-			HandlePacketProgressReport(dataPacket.GamePacket.(*request.PacketProgressReport), kcp_0)
-		case 18385:
-			HandlePacketHLAPIRequest(dataPacket.GamePacket.(*request.PacketHLAPIRequest), kcp_0)
+		case uint16(network.Command):
+			HandlePacketCmdRequest(dataPacket.GamePacket.(*request.PacketCmdRequest), networkManager)
+		case uint16(network.Ready):
+			HandlePacketPlayerReady(dataPacket.GamePacket.(*request.PacketClientReady), networkManager)
+		case uint16(network.ConnectionRequest):
+			HandlePacketConnection(dataPacket.GamePacket.(*request.PacketConnection), networkManager)
+		case uint16(network.ProgressReport):
+			HandlePacketProgressReport(dataPacket.GamePacket.(*request.PacketProgressReport), networkManager)
+		case uint16(network.HLAPI):
+			HandlePacketHLAPIRequest(dataPacket.GamePacket.(*request.PacketHLAPIRequest), networkManager)
 		default:
 			HandleUnknownPacket(dataPacket, packet)
 		}
