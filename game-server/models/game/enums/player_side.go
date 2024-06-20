@@ -3,7 +3,7 @@ package enums
 type EPlayerSide int32
 
 const (
-	Usec EPlayerSide = 1
+	Usec EPlayerSide = iota + 1
 	Bear
-	Savage = 4
+	Savage EPlayerSide = 4
 )

@@ -6,7 +6,7 @@ const (
 	None EDoorState = iota
 	DoorStateLocked
 	Shut
-	Open        = 4
-	Interacting = 8
-	Breaching   = 16
+	Open        EDoorState = 4
+	Interacting EDoorState = 8
+	Breaching   EDoorState = 16
 )

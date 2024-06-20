@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"game-server/helpers"
 	"game-server/models/game/request"
+	"game-server/models/game/response"
 )
 
 type DataPacket struct {
@@ -21,16 +22,24 @@ func (p *DataPacket) Type() byte {
 	return PacketTypeData
 }
 
-func (p *DataPacket) Parse(data []byte) error {
-	buffer := bytes.NewBuffer(data)
+func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 	helpers.ReadUInt16(buffer, &p.Length)
 	helpers.ReadUInt16(buffer, &p.GamePacketType)
 
-	if int(p.Length) != buffer.Len() {
-		fmt.Printf("IGNORING ERROR Length: %d, Buffer Length: %d\n", p.Length, buffer.Len())
+	packetBuf := make([]byte, p.Length)
+	n, err := buffer.Read(packetBuf)
+
+	if err != nil {
+		return err
+	}
+
+	if int(p.Length) != n {
+		fmt.Printf("IGNORING ERROR Length: %d, Buffer Length: %d\n", p.Length, n)
 		// fmt.Printf("ERRORING data: %x\n", data)
 		// return fmt.Errorf("ERROR Length: %d, Buffer Length: %d", p.Length, buffer.Len())
 	}
+
+	tmpBuffer := bytes.NewBuffer(packetBuf)
 
 	var res interface {
 		Serialize(buffer *bytes.Buffer) error
@@ -38,10 +47,16 @@ func (p *DataPacket) Parse(data []byte) error {
 	}
 	switch p.GamePacketType {
 	case 2:
-		// res = &response.PacketRpcResponse{}
-		return fmt.Errorf("PacketRpcResponse unexpected")
+		res = &response.PacketRpcResponse{}
+		// return fmt.Errorf("PacketRpcResponse unexpected")
+	case 3:
+		res = &response.PacketObjectSpawn{}
 	case 5:
 		res = &request.PacketCmdRequest{}
+	case 12:
+		res = &response.PacketSpawnFinished{}
+	case 15:
+		res = &response.PacketClientAuthority{}
 	case 35:
 		res = &request.PacketClientReady{}
 	case 147:
@@ -54,11 +69,12 @@ func (p *DataPacket) Parse(data []byte) error {
 		return nil
 	}
 
-	fmt.Printf("Received data packet type: %d. %v\n", p.GamePacketType, res)
-
-	err := res.Deserialize(buffer)
+	err = res.Deserialize(tmpBuffer)
 	if err != nil {
 		return err
+	}
+	if p.GamePacketType != 5 && p.GamePacketType != 3 {
+		fmt.Printf("Received data packet type: %d. %v\n", p.GamePacketType, res)
 	}
 	p.GamePacket = res
 	return nil

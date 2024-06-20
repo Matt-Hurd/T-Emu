@@ -34,7 +34,7 @@ const (
 	FollowerBirdEye
 	BossZryachiy
 	FollowerZryachiy
-	BossBoar = 32
+	BossBoar WildSpawnType = iota + 1
 	FollowerBoar
 	ArenaFighter
 	ArenaFighterEvent

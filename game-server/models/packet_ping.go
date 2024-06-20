@@ -14,8 +14,7 @@ func (p *PingPacket) Type() byte {
 	return PacketTypePing
 }
 
-func (p *PingPacket) Parse(data []byte) error {
-	buffer := bytes.NewBuffer(data)
+func (p *PingPacket) Parse(buffer *bytes.Buffer) error {
 	err := helpers.ReadUInt32(buffer, &p.ElapsedMilliseconds)
 	if err != nil {
 		return err

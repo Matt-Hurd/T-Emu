@@ -3,8 +3,8 @@ package enums
 type NoiseSuppressionLevels int
 
 const (
-	NoiseSuppressionDisabled NoiseSuppressionLevels = -1
-	NoiseSuppressionLow      NoiseSuppressionLevels = iota
+	NoiseSuppressionDisabled NoiseSuppressionLevels = iota - 1
+	NoiseSuppressionLow
 	NoiseSuppressionModerate
 	NoiseSuppressionHigh
 	NoiseSuppressionVeryHigh

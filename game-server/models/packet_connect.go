@@ -11,8 +11,7 @@ func (p *ConnectPacket) Type() byte {
 	return PacketTypeConnect
 }
 
-func (p *ConnectPacket) Parse(data []byte) error {
-	buffer := bytes.NewBuffer(data)
+func (p *ConnectPacket) Parse(buffer *bytes.Buffer) error {
 	syn, err := buffer.ReadByte()
 	if err != nil {
 		return err

@@ -6,12 +6,12 @@ const (
 	MemberCategoryDefault EMemberCategory = iota
 	MemberCategoryDeveloper
 	MemberCategoryUniqueId
-	MemberCategoryTrader                        = 4
-	MemberCategoryGroup                         = 8
-	MemberCategorySystem                        = 16
-	MemberCategoryChatModerator                 = 32
-	MemberCategoryChatModeratorWithPermanentBan = 64
-	MemberCategoryUnitTest                      = 128
-	MemberCategorySherpa                        = 256
-	MemberCategoryEmissary                      = 512
+	MemberCategoryTrader                        EMemberCategory = 4
+	MemberCategoryGroup                         EMemberCategory = 8
+	MemberCategorySystem                        EMemberCategory = 16
+	MemberCategoryChatModerator                 EMemberCategory = 32
+	MemberCategoryChatModeratorWithPermanentBan EMemberCategory = 64
+	MemberCategoryUnitTest                      EMemberCategory = 128
+	MemberCategorySherpa                        EMemberCategory = 256
+	MemberCategoryEmissary                      EMemberCategory = 512
 )

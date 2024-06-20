@@ -2,33 +2,39 @@ package request
 
 import (
 	"bytes"
+	"fmt"
 	"game-server/helpers"
 	"game-server/models/rpc"
 )
 
 type PacketCmdRequest struct {
-	CmdId   uint32
+	CmdId   int32
 	NetId   uint32
 	Command rpc.RPCCommand
 }
 
 func (p *PacketCmdRequest) Deserialize(buffer *bytes.Buffer) error {
-	err := helpers.ReadPackedUInt32(buffer, &p.CmdId)
+	var tmp uint32
+	err := helpers.ReadPackedUInt32(buffer, &tmp)
 	if err != nil {
 		panic(err)
 	}
+	p.CmdId = int32(tmp)
 
 	err = helpers.ReadPackedUInt32(buffer, &p.NetId)
 	if err != nil {
 		panic(err)
 	}
 
-	rpcCmd, success := rpc.GetRPCCommand(int(p.CmdId))
+	fmt.Printf("Deserialized PacketCmdRequest: %v\n", p)
+	rpcCmd, success := rpc.GetRPCCommand(int32(p.CmdId))
 	if !success {
 		panic("Failed to get rpc command")
 	}
 	p.Command = rpcCmd
 	p.Command.Deserialize(buffer)
+
+	fmt.Printf("Deserialized PacketCmdRequest: %v\n", p)
 	return nil
 }
 

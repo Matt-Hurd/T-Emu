@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 )
@@ -19,15 +20,17 @@ const (
 // Packet interface
 type Packet interface {
 	Type() byte
-	Parse([]byte) error
+	Parse(buffer *bytes.Buffer) error
 }
 
-func ParsePacket(data []byte) (Packet, error) {
-	if len(data) < 1 {
+func ParsePacket(buffer *bytes.Buffer) (Packet, error) {
+	if buffer.Len() < 1 {
 		return nil, errors.New("invalid packet length")
 	}
-	packetType := data[0]
-	packetData := data[1:]
+	packetType, err := buffer.ReadByte()
+	if err != nil {
+		return nil, err
+	}
 
 	var packet Packet
 	switch packetType {
@@ -42,7 +45,7 @@ func ParsePacket(data []byte) (Packet, error) {
 		return nil, errors.New("unknown packet type")
 	}
 
-	if err := packet.Parse(packetData); err != nil {
+	if err := packet.Parse(buffer); err != nil {
 		return nil, err
 	}
 
