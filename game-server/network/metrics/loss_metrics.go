@@ -43,8 +43,10 @@ func (g *LossMetrics) Commit() {
 	g.recentLoseCounts.Value = g.lastLoseCountValue
 	g.recentLoseCounts = g.recentLoseCounts.Next()
 	sum := 0
-	g.recentLoseCounts.Do(func(x interface{}) {
-		sum += x.(int)
+	g.recentLoseCounts.Do(func(x any) {
+		if x != nil {
+			sum += x.(int)
+		}
 	})
 	g.AverageLoseCountValue = sum / g.recentLoseCounts.Len()
 	g.lastLosePercentValue = float32(g.loseCount) / float32(g.totalCount)
@@ -52,8 +54,10 @@ func (g *LossMetrics) Commit() {
 	g.recentLosePercents.Value = g.lastLosePercentValue
 	g.recentLosePercents = g.recentLosePercents.Next()
 	fSum := float32(0.0)
-	g.recentLoseCounts.Do(func(x interface{}) {
-		fSum += x.(float32)
+	g.recentLosePercents.Do(func(x any) {
+		if x != nil {
+			fSum += x.(float32)
+		}
 	})
 	g.AverageLosePercentValue = float32(sum) / float32(g.recentLoseCounts.Len())
 	g.loseCount = 0

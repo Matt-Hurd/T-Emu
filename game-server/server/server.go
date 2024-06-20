@@ -63,6 +63,8 @@ func (srv *Server) handlePacket(data []byte, n int, addr *net.UDPAddr) {
 		srv.clients[addr.String()] = &player.PlayerSession{
 			Connection: network.NewNetworkManager(srv.conn, addr, network.DefaultNetworkConfig()),
 		}
+		srv.clients[addr.String()].Connection.DataPacketHandler = srv.clients[addr.String()].HandleDataPacket
+
 	}
 	srv.clients[addr.String()].Connection.HandleReceive(data, n)
 

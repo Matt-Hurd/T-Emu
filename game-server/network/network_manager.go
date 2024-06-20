@@ -16,25 +16,28 @@ import (
 	"github.com/xtaci/kcp-go/v5"
 )
 
+type DataPacketHandler func(*models.NetworkMessage)
+
 type NetworkManager struct {
-	logger           zerolog.Logger
-	state            *ConnectionState
-	conn             *net.UDPConn
-	addr             *net.UDPAddr
-	kcp_0            *kcp.KCP
-	Config           *NetworkConfig
-	stopwatch_0      time.Time
-	metrics          *metrics.NetworkMetrics
-	LastReceiveTime  uint32
-	lastPingResponse uint32
-	lastUpdateTime   uint32
-	byte_0           []byte
-	byte_1           []byte
-	msgCount         uint16
-	lastMsgId        uint16
-	SendQueue        chan *models.NetworkMessage
-	ReceiveQueue     chan *models.NetworkMessage
-	mu               sync.Mutex
+	logger            zerolog.Logger
+	state             *ConnectionState
+	conn              *net.UDPConn
+	addr              *net.UDPAddr
+	kcp_0             *kcp.KCP
+	Config            *NetworkConfig
+	stopwatch_0       time.Time
+	metrics           *metrics.NetworkMetrics
+	LastReceiveTime   uint32
+	lastPingResponse  uint32
+	lastUpdateTime    uint32
+	byte_0            []byte
+	byte_1            []byte
+	msgCount          uint16
+	lastMsgId         uint16
+	SendQueue         chan *models.NetworkMessage
+	ReceiveQueue      chan *models.NetworkMessage
+	DataPacketHandler DataPacketHandler
+	mu                sync.Mutex
 }
 
 func NewNetworkManager(socket *net.UDPConn, socketAddress *net.UDPAddr, configuration *NetworkConfig) *NetworkManager {
@@ -66,7 +69,7 @@ func NewNetworkManager(socket *net.UDPConn, socketAddress *net.UDPAddr, configur
 func (g *NetworkManager) processReceiveQueue() {
 	for msg := range g.ReceiveQueue {
 		if msg.Type == models.NetworkMessageTypeData {
-			HandleDataPacket(msg, g)
+			g.DataPacketHandler(msg)
 		} else {
 			fmt.Printf("Unexpected message in receieve queue: %v\n", msg)
 		}

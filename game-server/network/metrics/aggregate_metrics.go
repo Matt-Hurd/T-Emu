@@ -40,9 +40,11 @@ func (g *AggregateMetrics) Commit() {
 	g.lastValue = g.currentValue
 	g.recentValues.Value = g.lastValue
 	g.recentValues = g.recentValues.Next()
-	sum := 0.0
-	g.recentValues.Do(func(x interface{}) {
-		sum += x.(float64)
+	sum := 0
+	g.recentValues.Do(func(x any) {
+		if x != nil {
+			sum += x.(int)
+		}
 	})
 	g.averageValue = float32(sum) / float32(g.recentValues.Len())
 	g.currentValue = 0

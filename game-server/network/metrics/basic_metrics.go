@@ -26,8 +26,10 @@ func (g *BasicMetrics) Set(value float32) {
 	g.recentValues.Value = g.value
 	g.recentValues = g.recentValues.Next()
 	sum := float32(0.0)
-	g.recentValues.Do(func(x interface{}) {
-		sum += x.(float32)
+	g.recentValues.Do(func(x any) {
+		if x != nil {
+			sum += x.(float32)
+		}
 	})
 	g.AverageValue = sum / float32(g.recentValues.Len())
 }
