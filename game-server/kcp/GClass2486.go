@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"game-server/helpers"
 	"game-server/models"
+	"game-server/models/game/enums/network"
 	"net"
 	"os"
 	"sync"
@@ -76,6 +77,18 @@ func (g *GClass2486) processReceiveQueue() {
 func (g *GClass2486) processSendQueue() {
 	for msg := range g.SendQueue {
 		g.SendFinite(msg)
+	}
+}
+
+func (g *GClass2486) SendReliableDataPacket(hlapi network.PacketID, packet models.GamePacket) {
+	resp := &models.DataPacket{
+		GamePacketType: uint16(hlapi),
+		GamePacket:     packet,
+	}
+	g.SendQueue <- &models.GClass2498{
+		Channel: models.NetworkChannelReliable,
+		Type:    models.NetworkMessageTypeData,
+		Buffer:  resp.Write(),
 	}
 }
 

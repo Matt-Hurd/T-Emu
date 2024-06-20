@@ -9,13 +9,15 @@ import (
 	"game-server/models/game/response"
 )
 
+type GamePacket interface {
+	Serialize(buffer *bytes.Buffer) error
+	Deserialize(buffer *bytes.Buffer) error
+}
+
 type DataPacket struct {
 	Length         uint16
 	GamePacketType uint16
-	GamePacket     interface {
-		Serialize(buffer *bytes.Buffer) error
-		Deserialize(buffer *bytes.Buffer) error
-	}
+	GamePacket     GamePacket
 }
 
 func (p *DataPacket) Type() byte {

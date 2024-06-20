@@ -51,133 +51,43 @@ func HandlePacketCmdRequest(packet *request.PacketCmdRequest, g *GClass2486) {
 			panic(err)
 		}
 
-		resp := &models.DataPacket{
-			GamePacketType: uint16(network.WorldSpawn),
-			GamePacket:     testPacket,
-		}
-		g.SendQueue <- &models.GClass2498{
-			Channel: models.NetworkChannelReliable,
-			Type:    models.NetworkMessageTypeData,
-			Buffer:  resp.Write(),
-		}
-
-		rpcCmd := &response.PacketRpcResponse{
+		g.SendReliableDataPacket(network.WorldSpawn, testPacket)
+		g.SendReliableDataPacket(network.RPC, &response.PacketRpcResponse{
 			CmdId:   int32(network.RpcGameSpawned),
 			NetId:   1,
 			Command: &rpc.RpcGameSpawned{},
-		}
+		})
 
-		resp = &models.DataPacket{
-			GamePacketType: uint16(network.RPC),
-			GamePacket:     rpcCmd,
-		}
-		g.SendQueue <- &models.GClass2498{
-			Channel: models.NetworkChannelReliable,
-			Type:    models.NetworkMessageTypeData,
-			Buffer:  resp.Write(),
-		}
-
-		rpcCmd = &response.PacketRpcResponse{
+		g.SendReliableDataPacket(network.RPC, &response.PacketRpcResponse{
 			CmdId: int32(network.RpcGameStarting),
 			NetId: 1,
 			Command: &rpc.RpcGameStarting{
 				Seconds: 10,
-			},
-		}
-
-		resp = &models.DataPacket{
-			GamePacketType: uint16(network.RPC),
-			GamePacket:     rpcCmd,
-		}
-		g.SendQueue <- &models.GClass2498{
-			Channel: models.NetworkChannelReliable,
-			Type:    models.NetworkMessageTypeData,
-			Buffer:  resp.Write(),
-		}
+			}})
 	}
 }
 
 func HandlePacketPlayerReady(packet *request.PacketClientReady, g *GClass2486) {
-	firstSpawn := &response.PacketSpawnFinished{
-		State: 0,
-	}
+	g.SendReliableDataPacket(network.SpawnFinished, &response.PacketSpawnFinished{State: 0})
+	g.SendReliableDataPacket(network.SpawnFinished, &response.PacketSpawnFinished{State: 1})
 
-	resp := &models.DataPacket{
-		GamePacketType: uint16(network.SpawnFinished),
-		GamePacket:     firstSpawn,
-	}
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
-
-	secondSpawn := &response.PacketSpawnFinished{
-		State: 1,
-	}
-
-	resp = &models.DataPacket{
-		GamePacketType: uint16(network.SpawnFinished),
-		GamePacket:     secondSpawn,
-	}
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
-
-	objectSpawn := &response.PacketObjectSpawn{
+	objectSpawnPacket := response.PacketObjectSpawn{
 		NetId:    1,
 		Position: core.Vector3{Vector3: math32.Vector3{X: 0, Y: 0, Z: 0}},
 		Payload:  []byte{},
 		Rotation: core.Quaternion{
 			Quaternion: math32.Quaternion{X: 0, Y: 0, Z: 0, W: 1}},
 	}
-
-	objectSpawn.AssetId.FromBytes([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd})
-
-	resp = &models.DataPacket{
-		GamePacketType: uint16(network.ObjectSpawn),
-		GamePacket:     objectSpawn,
-	}
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
-
-	authority := &response.PacketClientAuthority{
-		NetId:     1,
-		Authority: true,
-	}
-
-	resp = &models.DataPacket{
-		GamePacketType: uint16(network.LocalClientAuthority),
-		GamePacket:     authority,
-	}
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
-
-	rpcCmd := &response.PacketRpcResponse{
+	objectSpawnPacket.AssetId.FromBytes([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd})
+	g.SendReliableDataPacket(network.ObjectSpawn, &objectSpawnPacket)
+	g.SendReliableDataPacket(network.LocalClientAuthority, &response.PacketClientAuthority{NetId: 1, Authority: true})
+	g.SendReliableDataPacket(network.RPC, &response.PacketRpcResponse{
 		CmdId: int32(network.RpcSyncGameTime),
 		NetId: 1,
 		Command: &rpc.RpcSyncGameTime{
 			Time: uint64(helpers.TimeToInt64(time.Now().Add(20 * time.Second))),
 		},
-	}
-
-	resp = &models.DataPacket{
-		GamePacketType: uint16(network.RPC),
-		GamePacket:     rpcCmd,
-	}
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
+	})
 }
 
 func HandlePacketProgressReport(packet *request.PacketProgressReport, g *GClass2486) {
@@ -189,10 +99,6 @@ func HandlePacketProgressReport(packet *request.PacketProgressReport, g *GClass2
 			nightmare := &response.NightMare{
 				Id: 1,
 			}
-			resp := &models.DataPacket{
-				GamePacketType: 188,
-				GamePacket:     nightmare,
-			}
 			nightmare.PrefabsData, err = helpers.CompressZlib([]byte(`[{"path":"assets/content/items/mods/barrels/barrel_mr43e-1c_510mm.bundle","rcid":"","FileName":"barrel_mr43e-1c_510mm"}]`))
 			if err != nil {
 				fmt.Println("Error compressing prefabs data:", err)
@@ -201,11 +107,7 @@ func HandlePacketProgressReport(packet *request.PacketProgressReport, g *GClass2
 			if err != nil {
 				fmt.Println("Error compressing customization data:", err)
 			}
-			g.SendQueue <- &models.GClass2498{
-				Channel: models.NetworkChannelReliable,
-				Type:    models.NetworkMessageTypeData,
-				Buffer:  resp.Write(),
-			}
+			g.SendReliableDataPacket(network.NightMare, nightmare)
 		}
 	}
 }
@@ -215,40 +117,23 @@ func HandlePacketConnection(packet *request.PacketConnection, g *GClass2486) {
 
 	g.ProfileId = packet.ProfileID
 	g.Token = packet.Token
-	connectionResponse := &response.PacketConnection{}
-	resp := &models.DataPacket{
-		GamePacketType: 147,
-		GamePacket:     connectionResponse,
-	}
-	connectionResponse.GetDefault()
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
+
+	g.SendReliableDataPacket(network.ConnectionRequest, &response.PacketConnection{})
 
 	time.Sleep(10 * time.Second)
 
-	nightmare := &response.NightMare{
+	nightMare := &response.NightMare{
 		Id: 0,
 	}
-	resp = &models.DataPacket{
-		GamePacketType: 188,
-		GamePacket:     nightmare,
-	}
-	nightmare.PrefabsData, err = helpers.CompressZlib([]byte(`[{"path":"assets/content/items/mods/barrels/barrel_pl15_izhmash_112mm_threaded_9x19.bundle","rcid":"","FileName":"barrel_pl15_izhmash_112mm_threaded_9x19"},{"path":"assets/content/items/mods/silencers/silencer_all_izhmash_pl15_std_9x19.bundle","rcid":"","FileName":"silencer_all_izhmash_pl15_std_9x19"}]`))
+	nightMare.PrefabsData, err = helpers.CompressZlib([]byte(`[{"path":"assets/content/items/mods/barrels/barrel_pl15_izhmash_112mm_threaded_9x19.bundle","rcid":"","FileName":"barrel_pl15_izhmash_112mm_threaded_9x19"},{"path":"assets/content/items/mods/silencers/silencer_all_izhmash_pl15_std_9x19.bundle","rcid":"","FileName":"silencer_all_izhmash_pl15_std_9x19"}]`))
 	if err != nil {
 		fmt.Println("Error compressing prefabs data:", err)
 	}
-	nightmare.CustomizationData, err = helpers.CompressZlib([]byte(`["66043cc27502eca33a08cad0","5e9dc97c86f774054c19ac9a"]`))
+	nightMare.CustomizationData, err = helpers.CompressZlib([]byte(`["66043cc27502eca33a08cad0","5e9dc97c86f774054c19ac9a"]`))
 	if err != nil {
 		fmt.Println("Error compressing customization data:", err)
 	}
-	g.SendQueue <- &models.GClass2498{
-		Channel: models.NetworkChannelReliable,
-		Type:    models.NetworkMessageTypeData,
-		Buffer:  resp.Write(),
-	}
+	g.SendReliableDataPacket(network.NightMare, nightMare)
 
 }
 
