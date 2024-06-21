@@ -8,12 +8,12 @@ import (
 type EExfiltrationStatus byte
 
 const (
-	NotPresent             EExfiltrationStatus = 1
-	UncompleteRequirements EExfiltrationStatus = 2
-	Countdown              EExfiltrationStatus = 3
-	RegularMode            EExfiltrationStatus = 4
-	Pending                EExfiltrationStatus = 5
-	AwaitsManualActivation EExfiltrationStatus = 6
+	NotPresent EExfiltrationStatus = iota + 1
+	UncompleteRequirements
+	Countdown
+	RegularMode
+	Pending
+	AwaitsManualActivation
 )
 
 type ExfilData struct {

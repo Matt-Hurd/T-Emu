@@ -63,8 +63,12 @@ func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 		res = &request.PacketClientReady{}
 	case 147:
 		res = &request.PacketConnection{}
+	case 151:
+		res = &response.WorldSpawn{}
 	case 190:
 		res = &request.PacketProgressReport{}
+	case 191:
+		res = &response.SubWorldSpawnLoot{}
 	case 18385:
 		res = &request.PacketHLAPIRequest{}
 	default:

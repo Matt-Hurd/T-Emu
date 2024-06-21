@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"time"
+	"unicode/utf16"
 )
 
 const (
@@ -246,4 +247,41 @@ func WritePackedUInt32(buf *bytes.Buffer, value uint32) error {
 
 	_, err := buf.Write(data)
 	return err
+}
+
+func write7BitEncodedInt(buffer *bytes.Buffer, value int) error {
+	for {
+		b := byte(value & 0x7F)
+		value >>= 7
+		if value != 0 {
+			b |= 0x80
+		}
+		err := buffer.WriteByte(b)
+		if err != nil {
+			return err
+		}
+		if value == 0 {
+			break
+		}
+	}
+	return nil
+}
+
+func WriteUTF16String(buffer *bytes.Buffer, value string) error {
+	runeSlice := []rune(value)
+	utf16Slice := utf16.Encode(runeSlice)
+
+	err := write7BitEncodedInt(buffer, len(utf16Slice))
+	if err != nil {
+		return err
+	}
+
+	for _, u16 := range utf16Slice {
+		err := binary.Write(buffer, binary.LittleEndian, u16)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

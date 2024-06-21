@@ -36,6 +36,74 @@ func ReadString(buffer *bytes.Buffer, result *string) error {
 	return nil
 }
 
+func read7BitEncodedInt(buffer *bytes.Buffer) (int, error) {
+	num := 0
+	num2 := 0
+	for {
+		if num2 == 35 {
+			return 0, errors.New("Format_Bad7BitInt32")
+		}
+		b, err := buffer.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		num |= int(b&0x7F) << num2
+		num2 += 7
+		if (b & 0x80) == 0 {
+			break
+		}
+	}
+	return num, nil
+}
+
+func ReadUTF16String(buffer *bytes.Buffer, result *string) error {
+	byteCount, err := read7BitEncodedInt(buffer)
+	if err != nil {
+		return err
+	}
+	byteData := make([]byte, byteCount)
+	n, err := buffer.Read(byteData)
+	if err != nil {
+		return err
+	}
+
+	if n != int(byteCount) {
+		return errors.New("read: incorrect number of bytes read")
+	}
+
+	*result = string(byteData)
+
+	// if err != nil {
+	// 	return err
+	// }
+	// if num2 < 0 {
+	// 	return fmt.Errorf("invalid string length: %d", num2)
+	// }
+	// if num2 == 0 {
+	// 	return nil
+	// }
+
+	// u16s := make([]uint16, num2)
+	// for i := 0; i < num2; i++ {
+	// 	var u16 uint16
+	// 	err := binary.Read(buffer, binary.LittleEndian, &u16)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	u16s[i] = u16
+	// }
+
+	// runes := utf16.Decode(u16s)
+	// var stringBuilder bytes.Buffer
+	// for _, r := range runes {
+	// 	buf := make([]byte, utf8.UTFMax)
+	// 	size := utf8.EncodeRune(buf, r)
+	// 	stringBuilder.Write(buf[:size])
+	// }
+	// *result = stringBuilder.String()
+	return nil
+}
+
 func ReadBool(buffer *bytes.Buffer, result *bool) error {
 	b, err := buffer.ReadByte()
 	if err != nil {
