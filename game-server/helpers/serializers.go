@@ -101,9 +101,7 @@ func WriteByte(buffer *bytes.Buffer, value byte) error {
 }
 
 func TimeToInt64(dateTime time.Time) int64 {
-	const unixEpochTicks = 621355968000000000
-	const nanosecondsToTicks = 100
-	ticks := unixEpochTicks + (dateTime.UnixNano() / nanosecondsToTicks)
+	ticks := unixEpochTicks + (dateTime.UnixNano() / ticksToNanoseconds)
 	return ticks
 }
 

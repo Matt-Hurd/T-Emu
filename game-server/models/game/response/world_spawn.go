@@ -2,7 +2,6 @@ package response
 
 import (
 	"bytes"
-	"fmt"
 	"game-server/helpers"
 	"game-server/models/game/core"
 	"game-server/models/game/enums"
@@ -32,42 +31,34 @@ func (ws *WorldSpawn) Deserialize(buffer *bytes.Buffer) error {
 	if err := ws.ExfiltrationController.Deserialize(buffer); err != nil {
 		return err
 	}
-	fmt.Println("ExfiltrationController: ", ws.ExfiltrationController)
 
 	if err := ws.BufferZoneControllerClass.Deserialize(buffer); err != nil {
 		return err
 	}
-	fmt.Println("BufferZoneControllerClass: ", ws.BufferZoneControllerClass)
 
 	if err := ws.InitializeSmokeGrenades(buffer); err != nil {
 		return err
 	}
-	fmt.Println("SmokeGrenades: ", ws.SmokeGrenades)
 
 	if err := ws.InitializeDoors(buffer); err != nil {
 		return err
 	}
-	fmt.Println("Doors: ", ws.DoorInfos)
 
 	if err := ws.InitializeLampControllers(buffer); err != nil {
 		return err
 	}
-	fmt.Println("LampControllers: ", ws.LampControllerInfos)
 
 	if err := ws.InitializeWindowBreakers(buffer); err != nil {
 		return err
 	}
-	fmt.Println("WindowBreakers: ", ws.WindowBreakerInfos)
 
 	if err := ws.SynchronizableObjectType(buffer); err != nil {
 		return err
 	}
-	fmt.Println("SynchronizableObjectType: ", ws.SynchronizableObjectTypes)
 
 	if err := ws.ReadBTR(buffer); err != nil {
 		return err
 	}
-	fmt.Println("BTR: ", ws.BTR)
 
 	return nil
 }

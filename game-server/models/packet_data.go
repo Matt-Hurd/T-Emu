@@ -69,6 +69,8 @@ func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 		res = &request.PacketProgressReport{}
 	case 191:
 		res = &response.SubWorldSpawnLoot{}
+	case 192:
+		res = &response.SubWorldSpawnSearchLoot{}
 	case 18385:
 		res = &request.PacketHLAPIRequest{}
 	default:
@@ -90,7 +92,7 @@ func (p *DataPacket) Write() []byte {
 	buffer := bytes.Buffer{}
 	err := p.GamePacket.Serialize(&buffer)
 	if err != nil {
-		fmt.Println("Error serializing connection response:", err)
+		fmt.Println("Error serializing data packet:", err)
 	}
 	p.Length = uint16(buffer.Len())
 

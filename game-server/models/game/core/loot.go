@@ -7,6 +7,7 @@ import (
 
 // GClass1532
 type Loot struct {
+	Serializable
 	hasID          bool
 	Id             string
 	Position       Vector3
