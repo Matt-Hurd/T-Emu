@@ -7,7 +7,7 @@ import (
 
 type PlayerCommandSkillParameters struct {
 	CovertMovementSpeed                float32
-	CovertMOvementLoud                 float32
+	CovertMovementLoud                 float32
 	CovertMovementSoundVolume          float32
 	CovertMovementEquipment            float32
 	BotSoundCoef                       float32
@@ -21,7 +21,7 @@ func (msg *PlayerCommandSkillParameters) Serialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	err = helpers.WriteFloat32(buffer, msg.CovertMOvementLoud)
+	err = helpers.WriteFloat32(buffer, msg.CovertMovementLoud)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (msg *PlayerCommandSkillParameters) Deserialize(buffer *bytes.Buffer) error
 	if err != nil {
 		return err
 	}
-	err = helpers.ReadFloat32(buffer, &msg.CovertMOvementLoud)
+	err = helpers.ReadFloat32(buffer, &msg.CovertMovementLoud)
 	if err != nil {
 		return err
 	}

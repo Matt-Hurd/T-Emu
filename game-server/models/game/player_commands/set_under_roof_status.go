@@ -6,15 +6,16 @@ import (
 )
 
 type PlayerCommandSetUnderRoofStatus struct {
-	IsUnderRoof *bool
+	hasValue    bool
+	IsUnderRoof bool
 }
 
 func (msg *PlayerCommandSetUnderRoofStatus) Serialize(buffer *bytes.Buffer) error {
-	if err := helpers.WriteBool(buffer, msg.IsUnderRoof == nil); err != nil {
+	if err := helpers.WriteBool(buffer, msg.hasValue); err != nil {
 		return err
 	}
-	if msg.IsUnderRoof != nil {
-		if err := helpers.WriteBool(buffer, *msg.IsUnderRoof); err != nil {
+	if msg.hasValue {
+		if err := helpers.WriteBool(buffer, msg.IsUnderRoof); err != nil {
 			return err
 		}
 	}
@@ -23,12 +24,11 @@ func (msg *PlayerCommandSetUnderRoofStatus) Serialize(buffer *bytes.Buffer) erro
 
 func (msg *PlayerCommandSetUnderRoofStatus) Deserialize(buffer *bytes.Buffer) error {
 	var err error
-	var isNil bool
-	if err = helpers.ReadBool(buffer, &isNil); err != nil {
+	if err = helpers.ReadBool(buffer, &msg.hasValue); err != nil {
 		return err
 	}
-	if !isNil {
-		if err = helpers.ReadBool(buffer, msg.IsUnderRoof); err != nil {
+	if msg.hasValue {
+		if err = helpers.ReadBool(buffer, &msg.IsUnderRoof); err != nil {
 			return err
 		}
 	}

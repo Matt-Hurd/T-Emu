@@ -4,6 +4,7 @@ package response
 
 import (
 	"bytes"
+	"fmt"
 	"game-server/helpers"
 	playercommands "game-server/models/game/player_commands"
 )
@@ -57,9 +58,11 @@ func (p *PacketCommandsObservedPlayers) Deserialize(buffer *bytes.Buffer) error 
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Count: %d\n", count)
 	p.ObservedPlayers = make(map[byte][]playercommands.PlayerCommand)
 	previousKey := byte(0)
 	for i := 0; i < int(count); i++ {
+		fmt.Printf("I: %d\n", i)
 		var key byte
 		err = helpers.ReadByte(buffer, &key)
 		if err != nil {
@@ -71,9 +74,11 @@ func (p *PacketCommandsObservedPlayers) Deserialize(buffer *bytes.Buffer) error 
 		if err != nil {
 			return err
 		}
+		fmt.Print("Key: ", key, " Count: ", count2, "\n")
 		p.ObservedPlayers[key] = make([]playercommands.PlayerCommand, count2)
 		for j := 0; j < int(count2); j++ {
 			err = p.ObservedPlayers[key][j].Deserialize(buffer)
+			fmt.Printf("Deserialized: %d %v\n", p.ObservedPlayers[key][j].Type, p.ObservedPlayers[key][j].Data)
 			if err != nil {
 				return err
 			}

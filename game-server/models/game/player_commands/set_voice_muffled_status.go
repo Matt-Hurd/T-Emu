@@ -6,15 +6,16 @@ import (
 )
 
 type PlayerCommandSetVoiceMuffledStatus struct {
-	IsVoiceMuffled *bool
+	hasValue       bool
+	IsVoiceMuffled bool
 }
 
 func (msg *PlayerCommandSetVoiceMuffledStatus) Serialize(buffer *bytes.Buffer) error {
-	if err := helpers.WriteBool(buffer, msg.IsVoiceMuffled == nil); err != nil {
+	if err := helpers.WriteBool(buffer, msg.hasValue); err != nil {
 		return err
 	}
-	if msg.IsVoiceMuffled != nil {
-		if err := helpers.WriteBool(buffer, *msg.IsVoiceMuffled); err != nil {
+	if msg.hasValue {
+		if err := helpers.WriteBool(buffer, msg.IsVoiceMuffled); err != nil {
 			return err
 		}
 	}
@@ -23,12 +24,11 @@ func (msg *PlayerCommandSetVoiceMuffledStatus) Serialize(buffer *bytes.Buffer) e
 
 func (msg *PlayerCommandSetVoiceMuffledStatus) Deserialize(buffer *bytes.Buffer) error {
 	var err error
-	var isNil bool
-	if err = helpers.ReadBool(buffer, &isNil); err != nil {
+	if err = helpers.ReadBool(buffer, &msg.hasValue); err != nil {
 		return err
 	}
-	if !isNil {
-		if err = helpers.ReadBool(buffer, msg.IsVoiceMuffled); err != nil {
+	if msg.hasValue {
+		if err = helpers.ReadBool(buffer, &msg.IsVoiceMuffled); err != nil {
 			return err
 		}
 	}
