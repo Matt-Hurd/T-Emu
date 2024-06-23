@@ -1,28 +1,29 @@
-package core
+package descriptors
 
 import (
 	"bytes"
 	"game-server/helpers"
+	"game-server/models/game/core"
 )
 
 // GClass1532
-type Loot struct {
+type LootDescriptor struct {
 	Serializable
 	hasID          bool
 	Id             string
-	Position       Vector3
-	Rotation       Vector3
-	Item           Item
+	Position       core.Vector3
+	Rotation       core.Vector3
+	Item           ItemDescriptor
 	hasProfiles    bool
 	ValidProfiles  []string
 	IsContainer    bool
 	UseGravity     bool
 	RandomRotation bool
-	Shift          Vector3
+	Shift          core.Vector3
 	PlatformId     int16
 }
 
-func (loot *Loot) Serialize(buffer *bytes.Buffer) error {
+func (loot *LootDescriptor) Serialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.WriteBool(buffer, loot.hasID)
 	if err != nil {
@@ -81,7 +82,7 @@ func (loot *Loot) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (loot *Loot) Deserialize(buffer *bytes.Buffer) error {
+func (loot *LootDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.ReadBool(buffer, &loot.hasID)
 	if err != nil {

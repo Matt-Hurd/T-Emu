@@ -1,4 +1,4 @@
-package core
+package descriptors
 
 import (
 	"bytes"
@@ -6,12 +6,12 @@ import (
 )
 
 // GClass1508
-type StackSlot struct {
+type StackSlotDescriptor struct {
 	Id             string
-	ContainedItems []Item
+	ContainedItems []ItemDescriptor
 }
 
-func (stackSlot *StackSlot) Serialize(buffer *bytes.Buffer) error {
+func (stackSlot *StackSlotDescriptor) Serialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.WriteUTF16String(buffer, stackSlot.Id)
 	if err != nil {
@@ -30,7 +30,7 @@ func (stackSlot *StackSlot) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (stackSlot *StackSlot) Deserialize(buffer *bytes.Buffer) error {
+func (stackSlot *StackSlotDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.ReadUTF16String(buffer, &stackSlot.Id)
 	if err != nil {
@@ -41,7 +41,7 @@ func (stackSlot *StackSlot) Deserialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	stackSlot.ContainedItems = make([]Item, ContainedItemsLength)
+	stackSlot.ContainedItems = make([]ItemDescriptor, ContainedItemsLength)
 	for i := range stackSlot.ContainedItems {
 		err = stackSlot.ContainedItems[i].Deserialize(buffer)
 		if err != nil {

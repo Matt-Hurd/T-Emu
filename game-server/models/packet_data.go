@@ -65,6 +65,8 @@ func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 		res = &request.PacketConnection{}
 	case 151:
 		res = &response.WorldSpawn{}
+	case 174:
+		res = &response.PacketCommandsObservedPlayers{}
 	case 190:
 		res = &request.PacketProgressReport{}
 	case 191:

@@ -1,4 +1,4 @@
-package core
+package descriptors
 
 import (
 	"bytes"
@@ -6,11 +6,11 @@ import (
 )
 
 // GClass1518
-type ResourceItemComponent struct {
+type ResourceItemComponentDescriptor struct {
 	Resource float32
 }
 
-func (component *ResourceItemComponent) Serialize(buffer *bytes.Buffer) error {
+func (component *ResourceItemComponentDescriptor) Serialize(buffer *bytes.Buffer) error {
 	err := helpers.WriteFloat32(buffer, component.Resource)
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func (component *ResourceItemComponent) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (component *ResourceItemComponent) Deserialize(buffer *bytes.Buffer) error {
+func (component *ResourceItemComponentDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	err := helpers.ReadFloat32(buffer, &component.Resource)
 	if err != nil {
 		return err

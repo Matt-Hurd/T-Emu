@@ -3,12 +3,12 @@ package response
 import (
 	"bytes"
 	"game-server/helpers"
-	"game-server/models/game/core"
+	"game-server/models/game/core/descriptors"
 )
 
 type SubWorldSpawnLoot struct {
 	Flag      bool
-	LootItems []core.Serializable //core.LootItem
+	LootItems []descriptors.Serializable //core.LootItem
 }
 
 func (p *SubWorldSpawnLoot) Serialize(buffer *bytes.Buffer) error {
@@ -24,7 +24,7 @@ func (p *SubWorldSpawnLoot) Serialize(buffer *bytes.Buffer) error {
 			return err
 		}
 		for _, v := range p.LootItems {
-			err = core.WritePolymorph(tmpBuf, v)
+			err = descriptors.WritePolymorph(tmpBuf, v)
 			if err != nil {
 				return err
 			}
@@ -67,10 +67,10 @@ func (p *SubWorldSpawnLoot) Deserialize(buffer *bytes.Buffer) error {
 			if err != nil {
 				return err
 			}
-			p.LootItems = make([]core.Serializable, count)
+			p.LootItems = make([]descriptors.Serializable, count)
 			for i := 0; i < int(count); i++ {
-				var loot core.Serializable
-				err = core.ReadPolymorph(newBuf, &loot)
+				var loot descriptors.Serializable
+				err = descriptors.ReadPolymorph(newBuf, &loot)
 				if err != nil {
 					return err
 				}

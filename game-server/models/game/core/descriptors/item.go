@@ -1,4 +1,4 @@
-package core
+package descriptors
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 )
 
 // GClass1510
-type Item struct {
+type ItemDescriptor struct {
 	Id                        string
 	TemplateId                string
 	StackCount                int32
@@ -14,12 +14,12 @@ type Item struct {
 	ActiveCamora              byte
 	IsUnderBarrelDeviceActive bool
 	Components                []ItemComponent
-	Slots                     []ItemSlot
+	Slots                     []SlotDescriptor
 	ShellsInWeapon            []string
 	ShellsInUnderbarrelWeapon []string
-	Grids                     []LootGrid
-	StackSlots                []StackSlot
-	Malfunction               []Malfunction
+	Grids                     []LootGridDescriptor
+	StackSlots                []StackSlotDescriptor
+	Malfunction               []MalfunctionDescriptor
 }
 
 // GClass1511
@@ -28,7 +28,7 @@ type ItemComponent interface {
 	Deserialize(buffer *bytes.Buffer) error
 }
 
-func (item *Item) Serialize(buffer *bytes.Buffer) error {
+func (item *ItemDescriptor) Serialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.WriteUTF16String(buffer, item.Id)
 	if err != nil {
@@ -127,7 +127,7 @@ func (item *Item) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (item *Item) Deserialize(buffer *bytes.Buffer) error {
+func (item *ItemDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.ReadUTF16String(buffer, &item.Id)
 	if err != nil {
@@ -172,7 +172,7 @@ func (item *Item) Deserialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	item.Slots = make([]ItemSlot, SlotsLength)
+	item.Slots = make([]SlotDescriptor, SlotsLength)
 	for i := range item.Slots {
 		err = item.Slots[i].Deserialize(buffer)
 		if err != nil {
@@ -208,7 +208,7 @@ func (item *Item) Deserialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	item.Grids = make([]LootGrid, GridsLength)
+	item.Grids = make([]LootGridDescriptor, GridsLength)
 	for i := range item.Grids {
 		err = item.Grids[i].Deserialize(buffer)
 		if err != nil {
@@ -220,7 +220,7 @@ func (item *Item) Deserialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	item.StackSlots = make([]StackSlot, StackSlotsLength)
+	item.StackSlots = make([]StackSlotDescriptor, StackSlotsLength)
 	for i := range item.StackSlots {
 		err = item.StackSlots[i].Deserialize(buffer)
 		if err != nil {
@@ -232,7 +232,7 @@ func (item *Item) Deserialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	item.Malfunction = make([]Malfunction, MalfunctionLength)
+	item.Malfunction = make([]MalfunctionDescriptor, MalfunctionLength)
 	for i := range item.Malfunction {
 		err = item.Malfunction[i].Deserialize(buffer)
 		if err != nil {

@@ -1,4 +1,4 @@
-package core
+package descriptors
 
 import (
 	"bytes"
@@ -6,11 +6,11 @@ import (
 )
 
 // GClass1512
-type FoodDrinkComponent struct {
+type FoodDrinkComponentDescriptor struct {
 	HpPercent float32
 }
 
-func (foodDrinkComponent *FoodDrinkComponent) Serialize(buffer *bytes.Buffer) error {
+func (foodDrinkComponent *FoodDrinkComponentDescriptor) Serialize(buffer *bytes.Buffer) error {
 	err := helpers.WriteFloat32(buffer, foodDrinkComponent.HpPercent)
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func (foodDrinkComponent *FoodDrinkComponent) Serialize(buffer *bytes.Buffer) er
 	return nil
 }
 
-func (foodDrinkComponent *FoodDrinkComponent) Deserialize(buffer *bytes.Buffer) error {
+func (foodDrinkComponent *FoodDrinkComponentDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	err := helpers.ReadFloat32(buffer, &foodDrinkComponent.HpPercent)
 	if err != nil {
 		return err

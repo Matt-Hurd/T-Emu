@@ -1,4 +1,4 @@
-package core
+package descriptors
 
 import (
 	"bytes"
@@ -6,12 +6,12 @@ import (
 )
 
 // GClass1503
-type ItemSlot struct {
+type SlotDescriptor struct {
 	Id            string
-	ContainedItem Item
+	ContainedItem ItemDescriptor
 }
 
-func (itemSlot *ItemSlot) Serialize(buffer *bytes.Buffer) error {
+func (itemSlot *SlotDescriptor) Serialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.WriteUTF16String(buffer, itemSlot.Id)
 	if err != nil {
@@ -24,7 +24,7 @@ func (itemSlot *ItemSlot) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (itemSlot *ItemSlot) Deserialize(buffer *bytes.Buffer) error {
+func (itemSlot *SlotDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.ReadUTF16String(buffer, &itemSlot.Id)
 	if err != nil {

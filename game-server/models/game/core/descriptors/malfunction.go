@@ -1,4 +1,4 @@
-package core
+package descriptors
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 )
 
 // GClass1505
-type Malfunction struct {
+type MalfunctionDescriptor struct {
 	Malfunction                            byte
 	LastShotOverheat                       float32
 	LastShotTime                           float32
@@ -22,7 +22,7 @@ type Malfunction struct {
 	AmmoMalfunctionedTemplateId            string
 }
 
-func (malfunction *Malfunction) Serialize(buffer *bytes.Buffer) error {
+func (malfunction *MalfunctionDescriptor) Serialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.WriteByte(buffer, malfunction.Malfunction)
 	if err != nil {
@@ -107,7 +107,7 @@ func (malfunction *Malfunction) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func (malfunction *Malfunction) Deserialize(buffer *bytes.Buffer) error {
+func (malfunction *MalfunctionDescriptor) Deserialize(buffer *bytes.Buffer) error {
 	var err error
 	err = helpers.ReadByte(buffer, &malfunction.Malfunction)
 	if err != nil {
