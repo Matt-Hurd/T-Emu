@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"os"
+	"strconv"
 	"time"
 	"unicode/utf16"
 )
@@ -93,6 +94,10 @@ func WriteUInt16(buffer *bytes.Buffer, value uint16) error {
 }
 
 func WriteInt64(buffer *bytes.Buffer, value int64) error {
+	return binary.Write(buffer, binary.LittleEndian, value)
+}
+
+func WriteUInt64(buffer *bytes.Buffer, value uint64) error {
 	return binary.Write(buffer, binary.LittleEndian, value)
 }
 
@@ -281,5 +286,27 @@ func WriteUTF16String(buffer *bytes.Buffer, value string) error {
 		}
 	}
 
+	return nil
+}
+
+func WriteMongoId(buffer *bytes.Buffer, id string) error {
+	if len(id) != 24 {
+		return errors.New("invalid mongo id length")
+	}
+	substr := id[:8]
+	timestamp, err := strconv.ParseUint(substr, 16, 32)
+	if err != nil {
+		return err
+	}
+	counter, err := strconv.ParseUint(id[8:14], 16, 64)
+	if err != nil {
+		return err
+	}
+	if err := WriteUInt32(buffer, uint32(timestamp)); err != nil {
+		return err
+	}
+	if err := WriteUInt64(buffer, counter); err != nil {
+		return err
+	}
 	return nil
 }

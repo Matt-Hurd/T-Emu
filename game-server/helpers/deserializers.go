@@ -128,11 +128,7 @@ func ReadBytesAndSize(buffer *bytes.Buffer, result *[]byte) error {
 }
 
 func ReadUInt32(buffer *bytes.Buffer, result *uint32) error {
-	err := binary.Read(buffer, binary.LittleEndian, result)
-	if err != nil {
-		return err
-	}
-	return nil
+	return binary.Read(buffer, binary.LittleEndian, result)
 }
 
 func ReadInt16(buffer *bytes.Buffer, result *int16) error {
@@ -144,6 +140,10 @@ func ReadInt32(buffer *bytes.Buffer, result *int32) error {
 }
 
 func ReadInt64(buffer *bytes.Buffer, result *int64) error {
+	return binary.Read(buffer, binary.LittleEndian, result)
+}
+
+func ReadUInt64(buffer *bytes.Buffer, result *uint64) error {
 	return binary.Read(buffer, binary.LittleEndian, result)
 }
 
@@ -322,4 +322,17 @@ func ReadPackedUInt32(buf *bytes.Buffer, out *uint32) error {
 	}
 
 	return fmt.Errorf("invalid first byte: %d", firstByte)
+}
+
+func ReadMongoId(buffer *bytes.Buffer, id *string) error {
+	var timestamp uint32
+	var counter uint64
+	if err := ReadUInt32(buffer, &timestamp); err != nil {
+		return err
+	}
+	if err := ReadUInt64(buffer, &counter); err != nil {
+		return err
+	}
+	*id = fmt.Sprintf("%08x%06x", timestamp, counter)
+	return nil
 }

@@ -1,6 +1,6 @@
 package enums
 
-type RadioTransmitterStatus int
+type RadioTransmitterStatus byte
 
 const (
 	NotInitialized RadioTransmitterStatus = iota

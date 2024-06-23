@@ -20,7 +20,7 @@ func (s *SmokeGrenadeInfo) Deserialize(buffer *bytes.Buffer) error {
 	if err = helpers.ReadString(buffer, &s.Id); err != nil {
 		return err
 	}
-	if s.Position.Deserialize(buffer); err != nil {
+	if err = s.Position.Deserialize(buffer); err != nil {
 		return err
 	}
 	if err = helpers.ReadString(buffer, &s.Template); err != nil {
@@ -29,7 +29,7 @@ func (s *SmokeGrenadeInfo) Deserialize(buffer *bytes.Buffer) error {
 	if err = helpers.ReadInt32(buffer, &s.Time); err != nil {
 		return err
 	}
-	if s.Orientation.Deserialize(buffer); err != nil {
+	if err = s.Orientation.Deserialize(buffer); err != nil {
 		return err
 	}
 	if err = helpers.ReadInt16(buffer, &s.PlatformId); err != nil {
