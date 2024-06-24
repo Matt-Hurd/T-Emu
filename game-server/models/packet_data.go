@@ -73,6 +73,8 @@ func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 		res = &response.PacketSnapshotObservedPlayers{}
 	case 174:
 		res = &response.PacketCommandsObservedPlayers{}
+	case 185:
+		res = &response.PacketPartialCommand{}
 	case 190:
 		res = &request.PacketProgressReport{}
 	case 191:
