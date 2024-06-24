@@ -7,7 +7,7 @@ import (
 )
 
 type CmdDevelopmentSpawnBotRequest struct {
-	side enums.EPlayerSide
+	side enums.PlayerSide
 }
 
 func (rsp *CmdDevelopmentSpawnBotRequest) Deserialize(buf *bytes.Buffer) error {
@@ -15,7 +15,7 @@ func (rsp *CmdDevelopmentSpawnBotRequest) Deserialize(buf *bytes.Buffer) error {
 	if err := helpers.ReadInt32(buf, &val); err != nil {
 		return err
 	} else {
-		rsp.side = enums.EPlayerSide(val)
+		rsp.side = enums.PlayerSide(val)
 	}
 	return nil
 }

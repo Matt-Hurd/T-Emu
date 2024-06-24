@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"game-server/helpers"
 	"game-server/models/game/enums"
+	"game-server/models/game/math"
 )
 
 type ArmorInfo struct {
@@ -12,7 +13,7 @@ type ArmorInfo struct {
 	MaxDurability          float32
 	Durability             float32
 	TemplateDurability     int32
-	RicochetValues         Vector3
+	RicochetValues         math.Vector3
 	ArmorClass             int32
 	Material               enums.MaterialType
 	ArmorColliders         []enums.BodyPartColliderType
@@ -23,7 +24,7 @@ type ArmorInfo struct {
 
 func (a *ArmorInfo) Deserialize(buffer *bytes.Buffer) error {
 	var err error
-	if err = helpers.ReadString(buffer, &a.ItemID); err != nil {
+	if err = helpers.ReadStringMinus(buffer, &a.ItemID); err != nil {
 		return err
 	}
 	if err = helpers.ReadByte(buffer, (*byte)(&a.ArmorType)); err != nil {
@@ -67,15 +68,17 @@ func (a *ArmorInfo) Deserialize(buffer *bytes.Buffer) error {
 	if err = helpers.ReadBool(buffer, &a.IsComposite); err != nil {
 		return err
 	}
-	if err = helpers.ReadBool(buffer, &a.IsToggledAndOff); err != nil {
-		return err
+	if a.IsComposite {
+		if err = helpers.ReadBool(buffer, &a.IsToggledAndOff); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func (a *ArmorInfo) Serialize(buffer *bytes.Buffer) error {
 	var err error
-	if err = helpers.WriteString(buffer, a.ItemID); err != nil {
+	if err = helpers.WriteStringPlus(buffer, a.ItemID); err != nil {
 		return err
 	}
 	if err = helpers.WriteByte(buffer, byte(a.ArmorType)); err != nil {
@@ -113,8 +116,10 @@ func (a *ArmorInfo) Serialize(buffer *bytes.Buffer) error {
 	if err = helpers.WriteBool(buffer, a.IsComposite); err != nil {
 		return err
 	}
-	if err = helpers.WriteBool(buffer, a.IsToggledAndOff); err != nil {
-		return err
+	if a.IsComposite {
+		if err = helpers.WriteBool(buffer, a.IsToggledAndOff); err != nil {
+			return err
+		}
 	}
 	return nil
 }

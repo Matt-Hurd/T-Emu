@@ -65,6 +65,8 @@ func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 		res = &request.PacketConnection{}
 	case 151:
 		res = &response.WorldSpawn{}
+	case 172:
+		res = &response.PacketSpawnObservedPlayers{}
 	case 174:
 		res = &response.PacketCommandsObservedPlayers{}
 	case 190:
@@ -83,9 +85,9 @@ func (p *DataPacket) Parse(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	if p.GamePacketType != 5 && p.GamePacketType != 3 {
-		fmt.Printf("Received data packet type: %d. %v\n", p.GamePacketType, res)
-	}
+	// if p.GamePacketType != 5 && p.GamePacketType != 3 {
+	// 	fmt.Printf("Received data packet type: %d. %v\n", p.GamePacketType, res)
+	// }
 	p.GamePacket = res
 	return nil
 }

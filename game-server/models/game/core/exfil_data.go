@@ -5,10 +5,10 @@ import (
 	"game-server/helpers"
 )
 
-type EExfiltrationStatus byte
+type ExfiltrationStatus byte
 
 const (
-	NotPresent EExfiltrationStatus = iota + 1
+	NotPresent ExfiltrationStatus = iota + 1
 	UncompleteRequirements
 	Countdown
 	RegularMode
@@ -18,7 +18,7 @@ const (
 
 type ExfilData struct {
 	Name               string
-	ExfiltrationStatus EExfiltrationStatus
+	ExfiltrationStatus ExfiltrationStatus
 	StartTime          int32
 	PlayerIds          []string
 }
@@ -33,7 +33,7 @@ func (e *ExfilData) Deserialize(buffer *bytes.Buffer) error {
 	if err = helpers.ReadByte(buffer, &status); err != nil {
 		return err
 	} else {
-		e.ExfiltrationStatus = EExfiltrationStatus(status)
+		e.ExfiltrationStatus = ExfiltrationStatus(status)
 	}
 	if err = helpers.ReadInt32(buffer, &e.StartTime); err != nil {
 		return err

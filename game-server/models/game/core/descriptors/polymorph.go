@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"game-server/helpers"
-	"game-server/models/game/core"
+	"game-server/models/game/math"
 )
 
 type Serializable interface {
@@ -20,11 +20,11 @@ func ReadPolymorph(buffer *bytes.Buffer, o *Serializable) error {
 	}
 	switch t {
 	case 0:
-		*o = &core.Quaternion{}
+		*o = &math.Quaternion{}
 	// case 1:
 	// 	*o = &ClassTransformSync{}
 	case 2:
-		*o = &core.Vector3{}
+		*o = &math.Vector3{}
 	case 3:
 		*o = &LocationInGrid{}
 	// case 4:
@@ -57,36 +57,36 @@ func ReadPolymorph(buffer *bytes.Buffer, o *Serializable) error {
 	// 	*o = &PoisonComponentDescriptor{}
 	case 19:
 		*o = &ResourceItemComponentDescriptor{}
-	// case 20:
-	// 	*o = &LightComponentDescriptor{}
+	case 20:
+		*o = &LightComponentDescriptor{}
 	// case 21:
 	// 	*o = &LockableComponentDescriptor{}
 	// case 22:
 	// 	*o = &MapComponentDescriptor{}
 	case 23:
 		*o = &MedKitComponentDescriptor{}
-	// case 24:
-	// 	*o = &RepairableComponentDescriptor{}
-	// case 25:
-	// 	*o = &SightComponentDescriptor{}
+	case 24:
+		*o = &RepairableComponentDescriptor{}
+	case 25:
+		*o = &SightComponentDescriptor{}
 	// case 26:
 	// 	*o = &TogglableComponentDescriptor{}
 	// case 27:
 	// 	*o = &FaceShieldComponentDescriptor{}
-	// case 28:
-	// 	*o = &FoldableComponentDescriptor{}
-	// case 29:
-	// 	*o = &FireModeComponentDescriptor{}
-	// case 30:
-	// 	*o = &DogTagComponentDescriptor{}
-	// case 31:
-	// 	*o = &TagComponentDescriptor{}
+	case 28:
+		*o = &FoldableComponentDescriptor{}
+	case 29:
+		*o = &FireModeComponentDescriptor{}
+	case 30:
+		*o = &DogTagComponentDescriptor{}
+	case 31:
+		*o = &TagComponentDescriptor{}
 	// case 32:
 	// 	*o = &KeyComponentDescriptor{}
 	// case 33:
 	// 	*o = &RepairKitComponentDescriptor{}
-	// case 34:
-	// 	*o = &RepairEnhancementComponentDescriptor{}
+	case 34:
+		*o = &RepairEnhancementComponentDescriptor{}
 	// case 35:
 	// 	*o = &RecodableComponentDescriptor{}
 	// case 36:
@@ -214,9 +214,9 @@ func ReadPolymorph(buffer *bytes.Buffer, o *Serializable) error {
 func WritePolymorph(buffer *bytes.Buffer, o Serializable) error {
 	var t byte
 	switch o.(type) {
-	case *core.Quaternion:
+	case *math.Quaternion:
 		t = 0
-	case *core.Vector3:
+	case *math.Vector3:
 		t = 2
 	case *LocationInGrid:
 		t = 3
@@ -238,8 +238,24 @@ func WritePolymorph(buffer *bytes.Buffer, o Serializable) error {
 		t = 17
 	case *ResourceItemComponentDescriptor:
 		t = 19
+	case *LightComponentDescriptor:
+		t = 20
 	case *MedKitComponentDescriptor:
 		t = 23
+	case *RepairableComponentDescriptor:
+		t = 24
+	case *SightComponentDescriptor:
+		t = 25
+	case *FoldableComponentDescriptor:
+		t = 28
+	case *FireModeComponentDescriptor:
+		t = 29
+	case *DogTagComponentDescriptor:
+		t = 30
+	case *TagComponentDescriptor:
+		t = 31
+	case *RepairEnhancementComponentDescriptor:
+		t = 34
 	case *LootDescriptor:
 		t = 37
 	default:

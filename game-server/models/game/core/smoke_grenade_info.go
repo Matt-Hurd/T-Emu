@@ -3,14 +3,15 @@ package core
 import (
 	"bytes"
 	"game-server/helpers"
+	"game-server/models/game/math"
 )
 
 type SmokeGrenadeInfo struct {
 	Id          string
-	Position    Vector3
+	Position    math.Vector3
 	Template    string
 	Time        int32
-	Orientation Quaternion
+	Orientation math.Quaternion
 	PlatformId  int16
 }
 

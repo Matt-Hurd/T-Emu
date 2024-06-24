@@ -12,7 +12,7 @@ type PlayerCommandSetHands struct {
 	FastHide                     bool
 	Armed                        bool
 	MalfunctionState             enums.MalfunctionState
-	AmmoInChamber                int32
+	AmmoInChamber                byte
 	DrawAnimationSpeedMultiplier float32
 	MalfunctionedAmmo            string
 	Item                         core.ComponentialItem
@@ -31,14 +31,14 @@ func (msg *PlayerCommandSetHands) Serialize(buffer *bytes.Buffer) error {
 	if err := buffer.WriteByte(byte(msg.MalfunctionState)); err != nil {
 		return err
 	}
-	if err := helpers.WriteInt32(buffer, msg.AmmoInChamber); err != nil {
+	if err := helpers.WriteByte(buffer, msg.AmmoInChamber); err != nil {
 		return err
 	}
 	if err := helpers.WriteFloat32(buffer, msg.DrawAnimationSpeedMultiplier); err != nil {
 		return err
 	}
 	if msg.MalfunctionState != enums.MalfunctionStateNone {
-		if err := helpers.WriteString(buffer, msg.MalfunctionedAmmo); err != nil {
+		if err := helpers.WriteStringPlus(buffer, msg.MalfunctionedAmmo); err != nil {
 			return err
 		}
 	}
@@ -62,14 +62,14 @@ func (msg *PlayerCommandSetHands) Deserialize(buffer *bytes.Buffer) error {
 	if err = helpers.ReadByte(buffer, (*byte)(&msg.MalfunctionState)); err != nil {
 		return err
 	}
-	if err = helpers.ReadInt32(buffer, &msg.AmmoInChamber); err != nil {
+	if err = helpers.ReadByte(buffer, &msg.AmmoInChamber); err != nil {
 		return err
 	}
 	if err = helpers.ReadFloat32(buffer, &msg.DrawAnimationSpeedMultiplier); err != nil {
 		return err
 	}
 	if msg.MalfunctionState != enums.MalfunctionStateNone {
-		if err = helpers.ReadString(buffer, &msg.MalfunctionedAmmo); err != nil {
+		if err = helpers.ReadStringMinus(buffer, &msg.MalfunctionedAmmo); err != nil {
 			return err
 		}
 	}

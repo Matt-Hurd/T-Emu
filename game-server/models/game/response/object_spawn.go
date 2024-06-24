@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"game-server/helpers"
 	"game-server/models/game/core"
+	"game-server/models/game/math"
 )
 
 type PacketObjectSpawn struct {
 	NetId    uint32
 	AssetId  core.NetworkHash128
-	Position core.Vector3
+	Position math.Vector3
 	Payload  []byte
-	Rotation core.Quaternion
+	Rotation math.Quaternion
 }
 
 func (p *PacketObjectSpawn) Deserialize(buffer *bytes.Buffer) error {

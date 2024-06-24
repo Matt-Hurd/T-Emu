@@ -36,6 +36,26 @@ func WriteString(buffer *bytes.Buffer, value string) error {
 	return err
 }
 
+func WriteStringPlus(buffer *bytes.Buffer, value string) error {
+	if value == "" {
+		err := binary.Write(buffer, binary.LittleEndian, uint16(0))
+		return err
+	}
+
+	byteCount := len(value)
+	if byteCount >= 32768 {
+		return errors.New("Serialize(string) too long")
+	}
+
+	err := binary.Write(buffer, binary.LittleEndian, uint16(byteCount+1))
+	if err != nil {
+		return err
+	}
+
+	_, err = buffer.Write([]byte(value))
+	return err
+}
+
 func UInt32ToBytes(value uint32) []byte {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.LittleEndian, value)
@@ -61,6 +81,16 @@ func WriteBool(buffer *bytes.Buffer, value bool) error {
 
 func WriteBytesAndSize(buffer *bytes.Buffer, value []byte) error {
 	length := uint16(len(value))
+	err := binary.Write(buffer, binary.LittleEndian, length)
+	if err != nil {
+		return err
+	}
+	_, err = buffer.Write(value)
+	return err
+}
+
+func WriteBytesAndSize32(buffer *bytes.Buffer, value []byte) error {
+	length := uint32(len(value)) + 1
 	err := binary.Write(buffer, binary.LittleEndian, length)
 	if err != nil {
 		return err
@@ -279,19 +309,15 @@ func WriteUTF16String(buffer *bytes.Buffer, value string) error {
 		return err
 	}
 
-	for _, u16 := range utf16Slice {
-		err := binary.Write(buffer, binary.LittleEndian, u16)
-		if err != nil {
-			return err
-		}
+	if err := binary.Write(buffer, binary.LittleEndian, []byte(value)); err != nil {
+		return err
 	}
-
 	return nil
 }
 
 func WriteMongoId(buffer *bytes.Buffer, id string) error {
 	if len(id) != 24 {
-		return errors.New("invalid mongo id length")
+		panic("invalid mongo id length")
 	}
 	substr := id[:8]
 	timestamp, err := strconv.ParseUint(substr, 16, 32)

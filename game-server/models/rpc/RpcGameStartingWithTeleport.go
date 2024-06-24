@@ -3,11 +3,11 @@ package rpc
 import (
 	"bytes"
 	"game-server/helpers"
-	"game-server/models/game/core"
+	"game-server/models/game/math"
 )
 
 type RpcGameStartingWithTeleport struct {
-	position       core.Vector3
+	position       math.Vector3
 	exfiltrationId int32
 	entryPoint     string
 }

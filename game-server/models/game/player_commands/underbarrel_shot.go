@@ -3,12 +3,12 @@ package playercommands
 import (
 	"bytes"
 	"game-server/helpers"
-	"game-server/models/game/core"
+	"game-server/models/game/math"
 )
 
 type PlayerCommandUnderbarrelShot struct {
-	ShotPosition  core.Vector3
-	ShotDirection core.Vector3
+	ShotPosition  math.Vector3
+	ShotDirection math.Vector3
 	AmmoTemplate  string
 }
 

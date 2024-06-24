@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"game-server/helpers"
-	"game-server/models/game/core"
 	networkModels "game-server/models/game/enums/network"
+	"game-server/models/game/math"
 	"game-server/models/game/request"
 	"game-server/models/game/response"
 	"game-server/models/rpc"
@@ -19,9 +19,9 @@ func HandlePacketPlayerReady(packet *request.PacketClientReady, g *network.Netwo
 
 	objectSpawnPacket := response.PacketObjectSpawn{
 		NetId:    1,
-		Position: core.Vector3{Vector3: math32.Vector3{X: 0, Y: 0, Z: 0}},
+		Position: math.Vector3{Vector3: math32.Vector3{X: 0, Y: 0, Z: 0}},
 		Payload:  []byte{},
-		Rotation: core.Quaternion{
+		Rotation: math.Quaternion{
 			Quaternion: math32.Quaternion{X: 0, Y: 0, Z: 0, W: 1}},
 	}
 	objectSpawnPacket.AssetId.FromBytes([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd})

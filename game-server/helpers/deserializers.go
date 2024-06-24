@@ -28,7 +28,38 @@ func ReadString(buffer *bytes.Buffer, result *string) error {
 	}
 
 	if n != int(byteCount) {
-		return errors.New("read: incorrect number of bytes read")
+		panic("read: incorrect number of bytes read")
+	}
+
+	*result = string(byteData)
+
+	return nil
+}
+
+func ReadStringMinus(buffer *bytes.Buffer, result *string) error {
+	var byteCount uint16
+	err := binary.Read(buffer, binary.LittleEndian, &byteCount)
+	if err != nil {
+		return err
+	}
+
+	if byteCount == 0 {
+		return nil
+	}
+
+	byteCount -= 1
+	if byteCount >= 32768 {
+		return errors.New("Deserialize(stringminus) too long")
+	}
+
+	byteData := make([]byte, byteCount)
+	n, err := buffer.Read(byteData)
+	if err != nil {
+		return err
+	}
+
+	if n != int(byteCount) {
+		panic("read: incorrect number of bytes read")
 	}
 
 	*result = string(byteData)
@@ -68,7 +99,7 @@ func ReadUTF16String(buffer *bytes.Buffer, result *string) error {
 	}
 
 	if n != int(byteCount) {
-		return errors.New("read: incorrect number of bytes read")
+		panic("read: incorrect number of bytes read")
 	}
 
 	*result = string(byteData)
@@ -116,6 +147,21 @@ func ReadBool(buffer *bytes.Buffer, result *bool) error {
 func ReadBytesAndSize(buffer *bytes.Buffer, result *[]byte) error {
 	var length uint16
 	err := binary.Read(buffer, binary.LittleEndian, &length)
+	if err != nil {
+		return err
+	}
+	*result = make([]byte, length)
+	_, err = buffer.Read(*result)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadBytesAndSize32(buffer *bytes.Buffer, result *[]byte) error {
+	var length uint32
+	err := binary.Read(buffer, binary.LittleEndian, &length)
+	length -= 1
 	if err != nil {
 		return err
 	}
@@ -333,6 +379,6 @@ func ReadMongoId(buffer *bytes.Buffer, id *string) error {
 	if err := ReadUInt64(buffer, &counter); err != nil {
 		return err
 	}
-	*id = fmt.Sprintf("%08x%06x", timestamp, counter)
+	*id = fmt.Sprintf("%08x%016x", timestamp, counter)
 	return nil
 }

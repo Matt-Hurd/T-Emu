@@ -21,7 +21,7 @@ func (fastAccess *FastAccessDescriptor) Serialize(buffer *bytes.Buffer) error {
 		if err != nil {
 			return err
 		}
-		err = helpers.WriteString(buffer, v)
+		err = helpers.WriteUTF16String(buffer, v)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (fastAccess *FastAccessDescriptor) Deserialize(buffer *bytes.Buffer) error 
 			return err
 		}
 		var v string
-		err = helpers.ReadString(buffer, &v)
+		err = helpers.ReadUTF16String(buffer, &v)
 		if err != nil {
 			return err
 		}

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"game-server/models/game/math"
+
 	"github.com/g3n/engine/math32"
 )
 
@@ -268,14 +270,14 @@ func (rp *PacketConnection) GetDefault() {
 	rp.InteractablesZipped = interactablesArray
 	rp.SessionId = make([]byte, 256)
 	rp.Bounds = core.Bounds{
-		Min: core.Vector3{
+		Min: math.Vector3{
 			Vector3: math32.Vector3{
 				X: -448,
 				Y: -250,
 				Z: -280,
 			},
 		},
-		Max: core.Vector3{
+		Max: math.Vector3{
 			Vector3: math32.Vector3{
 				X: 752,
 				Y: 250,

@@ -3,11 +3,12 @@ package core
 import (
 	"bytes"
 	"game-server/helpers"
+	"game-server/models/game/math"
 )
 
 type WindowBreakerInfo struct {
 	Id       int32
-	Position Vector3
+	Position math.Vector3
 }
 
 func (w *WindowBreakerInfo) Deserialize(buffer *bytes.Buffer) error {

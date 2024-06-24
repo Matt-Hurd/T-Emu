@@ -3,13 +3,14 @@ package playercommands
 import (
 	"bytes"
 	"game-server/models/game/core"
+	"game-server/models/game/math"
 )
 
 type PlayerCommandThrowItemAsLoot struct {
-	Position        core.Vector3
-	Rotation        core.Quaternion
-	Velocity        core.Vector3
-	AngularVelocity core.Vector3
+	Position        math.Vector3
+	Rotation        math.Quaternion
+	Velocity        math.Vector3
+	AngularVelocity math.Vector3
 	Item            core.ComponentialItem
 }
 

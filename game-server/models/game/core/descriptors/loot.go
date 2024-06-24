@@ -3,7 +3,7 @@ package descriptors
 import (
 	"bytes"
 	"game-server/helpers"
-	"game-server/models/game/core"
+	"game-server/models/game/math"
 )
 
 // GClass1532
@@ -11,15 +11,15 @@ type LootDescriptor struct {
 	Serializable
 	hasID          bool
 	Id             string
-	Position       core.Vector3
-	Rotation       core.Vector3
+	Position       math.Vector3
+	Rotation       math.Vector3
 	Item           ItemDescriptor
 	hasProfiles    bool
 	ValidProfiles  []string
 	IsContainer    bool
 	UseGravity     bool
 	RandomRotation bool
-	Shift          core.Vector3
+	Shift          math.Vector3
 	PlatformId     int16
 }
 

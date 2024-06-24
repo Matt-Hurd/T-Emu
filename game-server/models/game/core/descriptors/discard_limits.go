@@ -17,7 +17,7 @@ func (fastAccess *DiscardLimitsDescriptor) Serialize(buffer *bytes.Buffer) error
 		return err
 	}
 	for k, v := range fastAccess.Items {
-		err = helpers.WriteString(buffer, k)
+		err = helpers.WriteUTF16String(buffer, k)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func (fastAccess *DiscardLimitsDescriptor) Deserialize(buffer *bytes.Buffer) err
 	fastAccess.Items = make(map[string]int)
 	for i := 0; i < int(ItemsLength); i++ {
 		var k string
-		err = helpers.ReadString(buffer, &k)
+		err = helpers.ReadUTF16String(buffer, &k)
 		if err != nil {
 			return err
 		}

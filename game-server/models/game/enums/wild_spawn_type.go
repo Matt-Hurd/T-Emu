@@ -1,6 +1,6 @@
 package enums
 
-type WildSpawnType int
+type WildSpawnType byte
 
 const (
 	Marksman WildSpawnType = iota

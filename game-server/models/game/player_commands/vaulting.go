@@ -3,12 +3,12 @@ package playercommands
 import (
 	"bytes"
 	"game-server/helpers"
-	"game-server/models/game/core"
 	"game-server/models/game/enums"
+	"game-server/models/game/math"
 )
 
 type PlayerCommandVaulting struct {
-	VaultingPoint           core.Vector3
+	VaultingPoint           math.Vector3
 	VaultingStrategy        enums.VaultingStrategy
 	VaultingSpeed           float32
 	VaultingHeight          float32

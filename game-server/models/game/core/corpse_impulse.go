@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"game-server/helpers"
 	"game-server/models/game/enums"
+	"game-server/models/game/math"
 )
 
 type CorpseImpulse struct {
 	BodyPartColliderType enums.BodyPartColliderType
-	Direction            Vector3
-	Point                Vector3
+	Direction            math.Vector3
+	Point                math.Vector3
 	Force                float32
 	OverallVelocity      float32
 }

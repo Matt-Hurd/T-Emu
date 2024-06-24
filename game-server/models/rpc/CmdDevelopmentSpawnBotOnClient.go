@@ -7,7 +7,7 @@ import (
 )
 
 type CmdDevelopmentSpawnBotOnClient struct {
-	side       enums.EPlayerSide
+	side       enums.PlayerSide
 	instanceId int32
 }
 
@@ -16,7 +16,7 @@ func (rsp *CmdDevelopmentSpawnBotOnClient) Deserialize(buf *bytes.Buffer) error 
 	if err := helpers.ReadInt32(buf, &val); err != nil {
 		return err
 	} else {
-		rsp.side = enums.EPlayerSide(val)
+		rsp.side = enums.PlayerSide(val)
 	}
 	if err := helpers.ReadInt32(buf, &rsp.instanceId); err != nil {
 		return err

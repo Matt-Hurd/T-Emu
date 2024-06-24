@@ -7,7 +7,7 @@ import (
 )
 
 type CmdDevelopmentSpawnBotOnServer struct {
-	side       enums.EPlayerSide
+	side       enums.PlayerSide
 	profile    enums.WildSpawnType
 	difficulty enums.BotDifficulty
 }
@@ -17,7 +17,7 @@ func (rsp *CmdDevelopmentSpawnBotOnServer) Deserialize(buf *bytes.Buffer) error 
 	if err := helpers.ReadInt32(buf, &val); err != nil {
 		return err
 	} else {
-		rsp.side = enums.EPlayerSide(val)
+		rsp.side = enums.PlayerSide(val)
 	}
 	if err := helpers.ReadInt32(buf, &val); err != nil {
 		return err

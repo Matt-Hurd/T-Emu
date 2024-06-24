@@ -29,14 +29,14 @@ func (itemComponent *ItemComponent) Serialize(buffer *bytes.Buffer) error {
 			return err
 		}
 	}
-	if err := helpers.WriteString(buffer, itemComponent.SlotId); err != nil {
+	if err := helpers.WriteStringPlus(buffer, itemComponent.SlotId); err != nil {
 		return err
 	}
 	if err := helpers.WriteBool(buffer, len(itemComponent.UpdJson) > 0); err != nil {
 		return err
 	}
 	if len(itemComponent.UpdJson) > 0 {
-		if err := helpers.WriteString(buffer, itemComponent.UpdJson); err != nil {
+		if err := helpers.WriteStringPlus(buffer, itemComponent.UpdJson); err != nil {
 			return err
 		}
 	}
@@ -44,7 +44,7 @@ func (itemComponent *ItemComponent) Serialize(buffer *bytes.Buffer) error {
 		return err
 	}
 	if len(itemComponent.LocationJson) > 0 {
-		if err := helpers.WriteString(buffer, itemComponent.LocationJson); err != nil {
+		if err := helpers.WriteStringPlus(buffer, itemComponent.LocationJson); err != nil {
 			return err
 		}
 	}
@@ -68,7 +68,7 @@ func (itemComponent *ItemComponent) Deserialize(buffer *bytes.Buffer) error {
 			return err
 		}
 	}
-	if err = helpers.ReadString(buffer, &itemComponent.SlotId); err != nil {
+	if err = helpers.ReadStringMinus(buffer, &itemComponent.SlotId); err != nil {
 		return err
 	}
 	var hasUpdJson bool
@@ -76,7 +76,7 @@ func (itemComponent *ItemComponent) Deserialize(buffer *bytes.Buffer) error {
 		return err
 	}
 	if hasUpdJson {
-		if err = helpers.ReadString(buffer, &itemComponent.UpdJson); err != nil {
+		if err = helpers.ReadStringMinus(buffer, &itemComponent.UpdJson); err != nil {
 			return err
 		}
 	}
@@ -85,7 +85,7 @@ func (itemComponent *ItemComponent) Deserialize(buffer *bytes.Buffer) error {
 		return err
 	}
 	if hasLocationJson {
-		if err = helpers.ReadString(buffer, &itemComponent.LocationJson); err != nil {
+		if err = helpers.ReadStringMinus(buffer, &itemComponent.LocationJson); err != nil {
 			return err
 		}
 	}

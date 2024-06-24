@@ -1,6 +1,8 @@
 package core
 
+import "game-server/models/game/math"
+
 type Bounds struct {
-	Min Vector3
-	Max Vector3
+	Min math.Vector3
+	Max math.Vector3
 }

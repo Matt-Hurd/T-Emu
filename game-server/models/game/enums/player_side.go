@@ -1,9 +1,9 @@
 package enums
 
-type EPlayerSide int32
+type PlayerSide byte
 
 const (
-	Usec EPlayerSide = iota + 1
+	Usec PlayerSide = 1 << iota
 	Bear
-	Savage EPlayerSide = 4
+	Savage
 )
