@@ -2,13 +2,12 @@ package core
 
 import (
 	"bytes"
+	"game-server/models/game/enums"
 )
-
-type EPlayerState int
 
 type ConnectionConfig struct {
 	DefaultPlayerStateLimits PlayerStateLimits
-	DictPlayerStateLimits    map[EPlayerState]PlayerStateLimits
+	DictPlayerStateLimits    map[enums.PlayerState]PlayerStateLimits
 }
 
 func (cc *ConnectionConfig) Deserialize(buffer *bytes.Buffer) error {

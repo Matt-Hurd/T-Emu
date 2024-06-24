@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"game-server/helpers"
 	"game-server/models/game/core"
+	"game-server/models/game/enums"
 	"log"
 	"path/filepath"
 	"time"
@@ -299,7 +300,7 @@ func (rp *PacketConnection) GetDefault() {
 			MinSpeed: 3.6,
 			MaxSpeed: 4.6,
 		},
-		DictPlayerStateLimits: map[core.EPlayerState]core.PlayerStateLimits{
+		DictPlayerStateLimits: map[enums.PlayerState]core.PlayerStateLimits{
 			0: {
 				MinSpeed: 0.5,
 				MaxSpeed: 1.5,

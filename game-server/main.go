@@ -28,6 +28,7 @@ func parse_input(data []byte) {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Printf("data: %+v\n", dataPacket.GamePacket)
 		newBuf := dataPacket.Write()
 		// err = dataPacket.Parse(bytes.NewBuffer(newBuf))
 		// if err != nil {

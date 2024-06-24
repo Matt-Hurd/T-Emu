@@ -10,8 +10,8 @@ import (
 
 // GStruct286
 type PacketCommandsObservedPlayers struct {
-	WorldTime       float32
-	ObservedPlayers map[byte][]playercommands.PlayerCommand
+	WorldTime              float32
+	ObservedPlayerCommands map[byte][]playercommands.PlayerCommand
 }
 
 func (p *PacketCommandsObservedPlayers) Serialize(buffer *bytes.Buffer) error {
@@ -20,12 +20,12 @@ func (p *PacketCommandsObservedPlayers) Serialize(buffer *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	err = helpers.WriteByte(buffer, byte(len(p.ObservedPlayers)))
+	err = helpers.WriteByte(buffer, byte(len(p.ObservedPlayerCommands)))
 	if err != nil {
 		return err
 	}
 	previousKey := byte(0)
-	for key, value := range p.ObservedPlayers {
+	for key, value := range p.ObservedPlayerCommands {
 		key -= previousKey
 		err = helpers.WriteByte(buffer, key)
 		if err != nil {
@@ -57,7 +57,7 @@ func (p *PacketCommandsObservedPlayers) Deserialize(buffer *bytes.Buffer) error 
 	if err != nil {
 		return err
 	}
-	p.ObservedPlayers = make(map[byte][]playercommands.PlayerCommand)
+	p.ObservedPlayerCommands = make(map[byte][]playercommands.PlayerCommand)
 	previousKey := byte(0)
 	for i := 0; i < int(count); i++ {
 		var key byte
@@ -71,9 +71,9 @@ func (p *PacketCommandsObservedPlayers) Deserialize(buffer *bytes.Buffer) error 
 		if err != nil {
 			return err
 		}
-		p.ObservedPlayers[key] = make([]playercommands.PlayerCommand, count2)
+		p.ObservedPlayerCommands[key] = make([]playercommands.PlayerCommand, count2)
 		for j := 0; j < int(count2); j++ {
-			err = p.ObservedPlayers[key][j].Deserialize(buffer)
+			err = p.ObservedPlayerCommands[key][j].Deserialize(buffer)
 			if err != nil {
 				return err
 			}

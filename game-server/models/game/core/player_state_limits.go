@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"game-server/helpers"
+	"game-server/models/game/enums"
 )
 
 type PlayerStateLimits struct {
@@ -35,8 +36,8 @@ func (psl *PlayerStateLimits) Serialize(buffer *bytes.Buffer) error {
 	return nil
 }
 
-func DeserializeToDict(buffer *bytes.Buffer) (map[EPlayerState]PlayerStateLimits, error) {
-	dict := make(map[EPlayerState]PlayerStateLimits)
+func DeserializeToDict(buffer *bytes.Buffer) (map[enums.PlayerState]PlayerStateLimits, error) {
+	dict := make(map[enums.PlayerState]PlayerStateLimits)
 	var err error
 
 	var count int32
@@ -52,12 +53,12 @@ func DeserializeToDict(buffer *bytes.Buffer) (map[EPlayerState]PlayerStateLimits
 		if value, err = DeserializePlayerStateLimits(buffer); err != nil {
 			return nil, err
 		}
-		dict[EPlayerState(key)] = value
+		dict[enums.PlayerState(key)] = value
 	}
 	return dict, nil
 }
 
-func SerializeToDict(buffer *bytes.Buffer, dict map[EPlayerState]PlayerStateLimits) error {
+func SerializeToDict(buffer *bytes.Buffer, dict map[enums.PlayerState]PlayerStateLimits) error {
 	var err error
 
 	count := int32(len(dict))
